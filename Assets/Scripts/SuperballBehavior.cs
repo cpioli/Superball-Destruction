@@ -14,8 +14,8 @@ public class SuperballBehavior : MonoBehaviour
     private Vector3 currentDirection;
     private Rigidbody rBody;
 
-    private Vector3 onEnterCollisionVector; //last vector when colliding with an object
-    private Vector3 onExitCollisionVector; //last vector when bouncing off an object
+    private Vector3 lastCollisionLocation;
+    private Vector3 nextCollisionLocation; //the destination of the superball
 
     public Vector3 forward = new Vector3(1f, 0f, 1f);
     public float velocity = 1.0f;
@@ -38,7 +38,7 @@ public class SuperballBehavior : MonoBehaviour
                 break;
 
             case SuperBallState.LIVE:
-                IncrementPosition();
+                //IncrementPosition();
                 break;
 
             case SuperBallState.DEAD:
@@ -58,54 +58,45 @@ public class SuperballBehavior : MonoBehaviour
         ballState = SuperBallState.LIVE;
         rBody.AddForce(forward.normalized * velocity, ForceMode.Impulse);
         //IncrementPosition(); //TODO: implement
-
+        lastCollisionLocation = this.transform.position;
     }
 
     void OnCollisionEnter(Collision other)
     {
-        //print(this.name + "'s velocity: " + this.GetComponent<Rigidbody>().velocity);
+        Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.yellow, 480f);
+        lastCollisionLocation = this.transform.position;
     }
 
     void OnCollisionExit(Collision other)
     {
-        //print(this.name + "'s velocity: " + this.GetComponent<Rigidbody>().velocity);
+        print(this.name + "'s velocity: " + this.GetComponent<Rigidbody>().velocity);
         print(this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude);
-        if(other.collider.gameObject.GetComponent<PanelBehavior>().worthPoints)
+        /* removing this so I can properly test for collision detection
+         if(other.collider.gameObject.name.Contains("Plane"))
         {
-            this.GetComponent<Rigidbody>().velocity *= 1.05f;
+            if(other.collider.gameObject.GetComponent<PanelBehavior>().worthPoints)
+            {
+                this.GetComponent<Rigidbody>().velocity *= 1.01f;
+            }
+            
+        }*/
+        Ray ray = new Ray(lastCollisionLocation, this.GetComponent<Rigidbody>().velocity.normalized);
+        RaycastHit hitInfo;
+        if(Physics.Raycast(ray, out hitInfo))
+        {
+            nextCollisionLocation = hitInfo.point;
         }
-        
+        else
+        {
+            Debug.Log("Error calculating next collision!");
+        }
     }
 
-    void IncrementPosition()
-    //Acts as physics: moves the ball in the currentDirection vector by velocity * deltaTime
-    //also detects collision with panels
+    //Checks to see if the superball has gone past the objecct whose collision
+    //was predicted by our trajectory calculations in OnCollisionExit()
+    private bool ObjectPassedCollision()
     {
-        //this.transform.position += currentDirection * velocity * Time.deltaTime;
+        return true;
     }
 
-    void OnTriggerEnter(Collider other)
-    {
-        print(other.gameObject.name);
-        Mesh mesh = other.gameObject.GetComponent<MeshFilter>().mesh;
-        Vector3 normalVector = other.GetComponent<PanelBehavior>().GetNormal();
-        print(other.gameObject.name + " Normal: " + normalVector);
-
-        /*if (Mathf.Round(normalVector.x) != 0f)
-        {
-            print("Changing x direction! " + Mathf.Round(normalVector.x));
-            currentDirection.x = -currentDirection.x;
-        }
-        else if (Mathf.Round(normalVector.z) != 0f)
-        {
-            print("Changing z direction! " + Mathf.Round(normalVector.z));
-            currentDirection.z = -currentDirection.z;
-        }
-        else if (Mathf.Round(normalVector.y) != 0f)
-        {
-            print("Changing y direction! " + Mathf.Round(normalVector.y));
-            currentDirection.y = -currentDirection.y;
-        }
-        print("Current direction: " + currentDirection);*/
-    }
 }
