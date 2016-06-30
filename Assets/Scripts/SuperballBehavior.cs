@@ -16,7 +16,10 @@ public class SuperballBehavior : MonoBehaviour
 
     private Vector3 lastCollisionLocation;
     private Vector3 nextCollisionLocation; //the destination of the superball
-
+    private GameObject nextCollisionObject;
+    private int collisionLayer = 1 << 8;
+    private float maxObjectDeviation = 20f; //in degrees
+    private bool hitBreakableObject;
     public Vector3 forward = new Vector3(1f, 0f, 1f);
     public float velocity = 1.0f;
 
@@ -26,6 +29,7 @@ public class SuperballBehavior : MonoBehaviour
         ballState = SuperBallState.ATREST;
         rBody = this.GetComponent<Rigidbody>();
         forward.Normalize();
+        hitBreakableObject = false;
     }
 
     // Update is called once per frame
@@ -65,31 +69,82 @@ public class SuperballBehavior : MonoBehaviour
     {
         Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.yellow, 480f);
         lastCollisionLocation = this.transform.position;
+        if(other.gameObject.GetComponent<MirrorBehavior>() != null)
+        {
+            hitBreakableObject = true;
+        }
+        else
+        {
+            hitBreakableObject = false;
+        }
     }
 
     void OnCollisionExit(Collision other)
     {
         print(this.name + "'s velocity: " + this.GetComponent<Rigidbody>().velocity);
         print(this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude);
-        /* removing this so I can properly test for collision detection
-         if(other.collider.gameObject.name.Contains("Plane"))
-        {
-            if(other.collider.gameObject.GetComponent<PanelBehavior>().worthPoints)
-            {
-                this.GetComponent<Rigidbody>().velocity *= 1.01f;
-            }
-            
-        }*/
         Ray ray = new Ray(lastCollisionLocation, this.GetComponent<Rigidbody>().velocity.normalized);
         RaycastHit hitInfo;
-        if(Physics.Raycast(ray, out hitInfo))
+        if(Physics.Raycast(ray, out hitInfo, 30f, 1 << 8)) //collisions is layer 8, so 1 << 8 is necessary
         {
             nextCollisionLocation = hitInfo.point;
+            nextCollisionObject = hitInfo.collider.gameObject;
         }
         else
         {
             Debug.Log("Error calculating next collision!");
         }
+
+        if(hitBreakableObject)
+        {
+            HandleBreakableObjectCollision();
+        }
+        else
+        {
+            HandleUnbreakableObjectCollision();
+        }
+    }
+
+    private void HandleBreakableObjectCollision()
+    {
+        //Debug.Log("Handling BREAKABLE Object collision!");
+    }
+
+    private void HandleUnbreakableObjectCollision()
+    {
+        Debug.Log("Handling an UNbreakable Object collision!");
+        //TODO: implement
+    }
+
+    // checks to see if the next collideable object is breakable.
+    private bool NextCollisionIsBreakable()
+    {
+        return (nextCollisionObject.layer == collisionLayer);
+    }
+
+    // Returns a vector colliding with the closest breakable object 
+    // within the radial bounds of the superball's forward vector.
+    // Returns the zero Vector if no breakable object is found.
+    private Vector3 FindClosestBreakableObject()
+    {
+        Vector3 closestObject = Vector3.zero;
+        /*
+        Collider[] colliders;
+        colliders = Physics.OverlapSphere(this.transform.position, 6f, collisionLayer);
+        float closestObjectTheta = maxObjectDeviation;
+        for(int i = 0; i < colliders.Length; i++)
+        {
+            Vector3 colliderPosition = colliders[i].transform.position;
+            Vector3 colliderVector = colliderPosition - this.transform.position;
+            Vector3 currentVector = GetComponent<Rigidbody>().velocity;
+            float theta = Vector3.Angle(currentVector, colliderVector);
+            if(theta < closestObjectTheta)
+            {
+                closestObject = colliders[i].ClosestPointOnBounds(transform.position);
+            }
+        }
+        */
+        return closestObject;
     }
 
     //Checks to see if the superball has gone past the objecct whose collision
@@ -99,4 +154,21 @@ public class SuperballBehavior : MonoBehaviour
         return true;
     }
 
+    // increases or decreases the velocity of a rigidbody by a fixed amount
+    // this is done by finding the change between the velocity's magnitude
+    // and the increment (a scalar float value). Then multiplying the Vector3
+    // by a scalar 1.0f + increment_percentage
+    private void ChangeVelocityByIncrement(float increment)
+    {
+        Vector3 rBodyVel = GetComponent<Rigidbody>().velocity;
+        float magnitude = rBodyVel.magnitude;
+        float difference = increment / magnitude;
+        GetComponent<Rigidbody>().velocity *= (1.0f + difference);
+    }
+
+    // changes the velocity of a rigidbody by a scalar value
+    private void ChangeVelocityByScalar(float scalar)
+    {
+        GetComponent<Rigidbody>().velocity *= scalar;
+    }
 }
