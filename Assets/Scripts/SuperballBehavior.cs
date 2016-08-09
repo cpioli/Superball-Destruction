@@ -85,7 +85,7 @@ public class SuperballBehavior : MonoBehaviour
         print(this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude);
         Ray ray = new Ray(lastCollisionLocation, this.GetComponent<Rigidbody>().velocity.normalized);
         RaycastHit hitInfo;
-        if(Physics.Raycast(ray, out hitInfo, 30f, 1 << 8)) //collisions is layer 8, so 1 << 8 is necessary
+        if (Physics.Raycast(ray, out hitInfo, 30f, 1 << 8)) //collisions is layer 8, so 1 << 8 is necessary
         {
             nextCollisionLocation = hitInfo.point;
             nextCollisionObject = hitInfo.collider.gameObject;
@@ -95,7 +95,7 @@ public class SuperballBehavior : MonoBehaviour
             Debug.Log("Error calculating next collision!");
         }
 
-        if(hitBreakableObject)
+        if (hitBreakableObject)
         {
             HandleBreakableObjectCollision();
         }
@@ -103,17 +103,30 @@ public class SuperballBehavior : MonoBehaviour
         {
             HandleUnbreakableObjectCollision();
         }
+
+        Vector3 nextBestBreakableObject = Vector3.zero;
+        if (!NextCollisionIsBreakable())
+        {
+            nextBestBreakableObject = FindClosestBreakableObject();
+            if (nextBestBreakableObject != Vector3.zero)
+            {
+                Debug.Log("Readjusting superball's trajectory!");
+                ReadjustSuperballTrajectory(nextBestBreakableObject);
+            }
+        }
+        
     }
 
     private void HandleBreakableObjectCollision()
     {
-        //Debug.Log("Handling BREAKABLE Object collision!");
+        Debug.Log("Handling BREAKABLE Object collision!");
+        this.ChangeVelocityByIncrement(0.05f);
     }
 
     private void HandleUnbreakableObjectCollision()
     {
         Debug.Log("Handling an UNbreakable Object collision!");
-        //TODO: implement
+        this.ChangeVelocityByIncrement(-0.05f);
     }
 
     // checks to see if the next collideable object is breakable.
@@ -128,7 +141,7 @@ public class SuperballBehavior : MonoBehaviour
     private Vector3 FindClosestBreakableObject()
     {
         Vector3 closestObject = Vector3.zero;
-        /*
+        
         Collider[] colliders;
         colliders = Physics.OverlapSphere(this.transform.position, 6f, collisionLayer);
         float closestObjectTheta = maxObjectDeviation;
@@ -136,6 +149,10 @@ public class SuperballBehavior : MonoBehaviour
         {
             Vector3 colliderPosition = colliders[i].transform.position;
             Vector3 colliderVector = colliderPosition - this.transform.position;
+            //TODO: check to see if the collision point from the Overlap sphere is suitable for
+            //the next collision of the superball. It's possible I may need to do a SphereCast
+            //in the object's direction to determine the precise location of the target.
+            // otherwise, trajectories could be off by a few hundredths of a unit and mess up the physics.
             Vector3 currentVector = GetComponent<Rigidbody>().velocity;
             float theta = Vector3.Angle(currentVector, colliderVector);
             if(theta < closestObjectTheta)
@@ -143,7 +160,7 @@ public class SuperballBehavior : MonoBehaviour
                 closestObject = colliders[i].ClosestPointOnBounds(transform.position);
             }
         }
-        */
+        
         return closestObject;
     }
 
@@ -152,6 +169,14 @@ public class SuperballBehavior : MonoBehaviour
     private bool ObjectPassedCollision()
     {
         return true;
+    }
+
+    private void ReadjustSuperballTrajectory(Vector3 nextCollisionPoint)
+    {
+        rBody = GetComponent<Rigidbody>();
+        float speed = rBody.velocity.magnitude;
+        Vector3 newForward = (nextCollisionPoint - transform.position).normalized;
+        rBody.velocity = newForward * speed;
     }
 
     // increases or decreases the velocity of a rigidbody by a fixed amount
