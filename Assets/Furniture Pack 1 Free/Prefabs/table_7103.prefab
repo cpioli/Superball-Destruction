@@ -22,7 +22,7 @@ GameObject:
   - 65: {fileID: 6522320}
   - 65: {fileID: 6528834}
   - 65: {fileID: 6541930}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: table_7103
   m_TagString: Untagged
   m_Icon: {fileID: 0}
