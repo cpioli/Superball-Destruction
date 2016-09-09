@@ -35,14 +35,14 @@ public class SuperballBehavior : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-       switch (ballState)
+        switch (ballState)
         {
             case SuperBallState.ATREST:
                 BallAtRest();
                 break;
 
             case SuperBallState.LIVE:
-                //IncrementPosition();
+                CheckSuperballVelocity();
                 break;
 
             case SuperBallState.DEAD:
@@ -63,6 +63,22 @@ public class SuperballBehavior : MonoBehaviour
         rBody.AddForce(forward.normalized * velocity, ForceMode.Impulse);
         //IncrementPosition(); //TODO: implement
         lastCollisionLocation = this.transform.position;
+    }
+
+    void CheckSuperballVelocity()
+    {
+        int deadAxes = 0;
+        if (rBody.velocity.x == 0f) deadAxes++;
+        if (rBody.velocity.y == 0f) deadAxes++;
+        if (rBody.velocity.z == 0f) deadAxes++;
+        if (deadAxes >= 2)
+        {
+            Debug.LogErrorFormat("Error: Velocity in two directions has been nullified: {0}", rBody.velocity);
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPaused = true;
+            Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.red, 480f);
+#endif
+        }
     }
 
     void OnCollisionEnter(Collision other)
@@ -104,7 +120,8 @@ public class SuperballBehavior : MonoBehaviour
             HandleUnbreakableObjectCollision();
         }
 
-        Vector3 nextBestBreakableObject = Vector3.zero;
+        /* I need to comment out this block to see what's causing things to go wrong.
+         * Vector3 nextBestBreakableObject = Vector3.zero;
         if (!NextCollisionIsBreakable())
         {
             nextBestBreakableObject = FindClosestBreakableObject();
@@ -113,7 +130,7 @@ public class SuperballBehavior : MonoBehaviour
                 Debug.Log("Readjusting superball's trajectory!");
                 ReadjustSuperballTrajectory(nextBestBreakableObject);
             }
-        }
+        }*/
         
     }
 

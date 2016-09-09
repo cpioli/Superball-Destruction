@@ -30,11 +30,6 @@ public class CameraBehavior : MonoBehaviour
     [HideInInspector]
     public float defaultFieldOfView = 30.0f;
 
-    //tutorial values
-    private bool movedCameraLeftRight, movedCameraUpDown, zoomedCamera, pannedCamera;
-    private Vector3 villagePos, volcanoPos;
-    private Vector3 oldMagmaRockPos, newMagmaRockPos, deltaMagmaRockPos, newCamPos; //I tween the camera to move with the rock in FTUE
-
     //still used by FTUE. TODO: Try to remove it.
     public GameObject emptyGameObject; //reference for an empty game object, which is used as the point that the camera always looks at
 
@@ -108,13 +103,8 @@ public class CameraBehavior : MonoBehaviour
 
         //UI initialization
         cameraLocked = false;
-        movedCameraLeftRight = false;
-        movedCameraUpDown = false;
-        zoomedCamera = false;
-        pannedCamera = false;
 
         isPaused = false;
-        newCamPos = Vector3.zero;
 
         cameraRig = new GameObject();
         cameraRig.name = "Main Camera Rig";
@@ -276,7 +266,7 @@ public class CameraBehavior : MonoBehaviour
         xDeg += x * defaultRotationSpeed * 0.6f;
         oldYDeg = yDeg;
         yDeg -= y * defaultRotationSpeed * 0.6f;
-        
+
     }
 
     private void CalculatePanningInput()

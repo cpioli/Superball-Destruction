@@ -31,7 +31,9 @@ public class PanelBehavior : MonoBehaviour
         timesHit++;
         Color currentColor = mat.GetColor("_Color");
         mat.SetColor("_Color", currentColor - colorDecrement);
-       // Debug.Log("Panel is hit!");
+        // Debug.Log("Panel is hit!");
+        Debug.LogFormat("Hit a {0}", this.name);
+
     }
 
     public Vector3 GetNormal()
