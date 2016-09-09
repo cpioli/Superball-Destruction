@@ -20,6 +20,7 @@ public class SuperballBehavior : MonoBehaviour
     private int collisionLayer = 1 << 8;
     private float maxObjectDeviation = 20f; //in degrees
     private bool hitBreakableObject;
+    private int xZeroVelocityCount, yZeroVelocityCount, zZeroVelocityCount;
     public Vector3 forward = new Vector3(1f, 0f, 1f);
     public float velocity = 1.0f;
 
@@ -30,6 +31,9 @@ public class SuperballBehavior : MonoBehaviour
         rBody = this.GetComponent<Rigidbody>();
         forward.Normalize();
         hitBreakableObject = false;
+        xZeroVelocityCount = 0;
+        yZeroVelocityCount = 0;
+        zZeroVelocityCount = 0;
     }
 
     // Update is called once per frame
@@ -42,7 +46,6 @@ public class SuperballBehavior : MonoBehaviour
                 break;
 
             case SuperBallState.LIVE:
-                CheckSuperballVelocity();
                 break;
 
             case SuperBallState.DEAD:
@@ -65,21 +68,7 @@ public class SuperballBehavior : MonoBehaviour
         lastCollisionLocation = this.transform.position;
     }
 
-    void CheckSuperballVelocity()
-    {
-        int deadAxes = 0;
-        if (rBody.velocity.x == 0f) deadAxes++;
-        if (rBody.velocity.y == 0f) deadAxes++;
-        if (rBody.velocity.z == 0f) deadAxes++;
-        if (deadAxes >= 2)
-        {
-            Debug.LogErrorFormat("Error: Velocity in two directions has been nullified: {0}", rBody.velocity);
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPaused = true;
-            Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.red, 480f);
-#endif
-        }
-    }
+
 
     void OnCollisionEnter(Collision other)
     {
@@ -119,7 +108,7 @@ public class SuperballBehavior : MonoBehaviour
         {
             HandleUnbreakableObjectCollision();
         }
-
+        CheckSuperballVelocity(this.GetComponent<Rigidbody>().velocity);
         /* I need to comment out this block to see what's causing things to go wrong.
          * Vector3 nextBestBreakableObject = Vector3.zero;
         if (!NextCollisionIsBreakable())
@@ -132,6 +121,54 @@ public class SuperballBehavior : MonoBehaviour
             }
         }*/
         
+    }
+
+    void CheckSuperballVelocity(Vector3 velocity)
+    {
+        int deadAxes = 0;
+        if (Mathf.Abs(velocity.x) <= 0.1f)
+        {
+            deadAxes++;
+            xZeroVelocityCount++;
+            print("incremented xZeroVelocityCount: " + xZeroVelocityCount);
+        }
+        else
+        {
+            print("vZeroCount is reset! " + velocity.x);
+            xZeroVelocityCount = 0;
+        }
+
+        if (Mathf.Abs(velocity.x) <= 0.1f)
+        {
+            deadAxes++;
+            yZeroVelocityCount++;
+        }
+        else yZeroVelocityCount = 0;
+
+        if (Mathf.Abs(velocity.x) <= 0.1f)
+        {
+            deadAxes++;
+            zZeroVelocityCount++;
+        }
+        else zZeroVelocityCount = 0;
+
+        if (deadAxes >= 2)
+        {
+            Debug.LogErrorFormat("Error: Velocity in two directions has been nullified: {0}", rBody.velocity);
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPaused = true;
+            Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.red, 480f);
+#endif
+        }
+
+        if (xZeroVelocityCount >= 4 || yZeroVelocityCount >= 4 || zZeroVelocityCount >= 4)
+        {
+            Debug.LogErrorFormat("Error: Velocity in at least one direction has been nullified: {0}", rBody.velocity);
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPaused = true;
+#endif
+        }
+
     }
 
     private void HandleBreakableObjectCollision()
