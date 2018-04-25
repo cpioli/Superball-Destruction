@@ -9,10 +9,10 @@ GameObject:
   m_Component:
   - 4: {fileID: 402844}
   - 33: {fileID: 3387272}
-  - 65: {fileID: 6556730}
   - 23: {fileID: 2355942}
   - 114: {fileID: 11497642}
   - 54: {fileID: 5480372}
+  - 65: {fileID: 6556730}
   m_Layer: 8
   m_Name: BreakableSurface
   m_TagString: Untagged
@@ -27,7 +27,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 143770}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.32, y: 0.384, z: 1.258}
+  m_LocalPosition: {x: -0.704, y: 0.384, z: 0.872}
   m_LocalScale: {x: 0.5, y: 0.75, z: 0.05}
   m_Children: []
   m_Father: {fileID: 0}
