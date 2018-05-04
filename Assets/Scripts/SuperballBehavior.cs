@@ -4,13 +4,13 @@ using System.Collections;
 public class SuperballBehavior : MonoBehaviour
 {
 
-    enum SuperBallState
+    public enum SuperBallState
     {
         ATREST,
         LIVE,
         DEAD
     }
-    private SuperBallState ballState;
+    public SuperBallState ballState;
     private Vector3 currentDirection;
     private Rigidbody rBody;
 
@@ -34,6 +34,8 @@ public class SuperballBehavior : MonoBehaviour
         xZeroVelocityCount = 0;
         yZeroVelocityCount = 0;
         zZeroVelocityCount = 0;
+        GameObject.Find("RoomCamera").GetComponent<Camera>().enabled = false ;
+
     }
 
     // Update is called once per frame
@@ -61,6 +63,8 @@ public class SuperballBehavior : MonoBehaviour
         if (!Input.GetKeyUp(KeyCode.Space))
             return;
 
+        GameObject.Find("Main Camera").GetComponent<Camera>().enabled = false;
+        GameObject.Find("RoomCamera").GetComponent<Camera>().enabled = true;
         print("Adding force!");
         ballState = SuperBallState.LIVE;
         rBody.AddForce(forward.normalized * velocity, ForceMode.Impulse);
@@ -69,10 +73,11 @@ public class SuperballBehavior : MonoBehaviour
     }
 
 
-
+    //USe this method to track issues you might have with collisions
     void OnCollisionEnter(Collision other)
     {
         Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.yellow, 480f);
+        
         lastCollisionLocation = this.transform.position;
         if(other.gameObject.GetComponent<MirrorBehavior>() != null)
         {
@@ -130,11 +135,9 @@ public class SuperballBehavior : MonoBehaviour
         {
             deadAxes++;
             xZeroVelocityCount++;
-            print("incremented xZeroVelocityCount: " + xZeroVelocityCount);
         }
         else
         {
-            print("vZeroCount is reset! " + velocity.x);
             xZeroVelocityCount = 0;
         }
 
