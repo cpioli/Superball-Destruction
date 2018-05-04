@@ -30,22 +30,31 @@ public class CannonBehavior : MonoBehaviour {
     public float frameCounter = 20;
 
     Quaternion originalRotation;
+    //reusable components to save memory.
+    public GameObject RicochetArrows;
+    public GameObject CannonBarrel;
+    private SphereCollider sphereCollider;
+    private RaycastHit hitInfo;
+    private SuperballBehavior sbBehavior;
 
     // Use this for initialization
     void Start () {
         camObject = GameObject.Find("Main Camera");
 
         //https://forum.unity.com/threads/simple-first-person-camera-script.417611/
-//        Rigidbody rb = GetComponent<Rigidbody>();
-//        if (rb)
-//            rb.freezeRotation = true;
+        //        Rigidbody rb = GetComponent<Rigidbody>();
+        //        if (rb)
+        //            rb.freezeRotation = true;
+        sphereCollider = GameObject.Find("Sphere").GetComponent<SphereCollider>();
         originalRotation = transform.localRotation;
+        sbBehavior = GameObject.Find("Sphere").GetComponent<SuperballBehavior>();
     }
 	
 	// Update is called once per frame
 	void Update () {
         UpdateControls();
-        UpdateAim();
+        if(sbBehavior.ballState == SuperballBehavior.SuperBallState.ATREST)
+            UpdateAim();
 	}
 
     void UpdateControls()
@@ -89,13 +98,9 @@ public class CannonBehavior : MonoBehaviour {
 
         rotationY += Input.GetAxis("Mouse Y") * sensitivityY;
         rotationX += Input.GetAxis("Mouse X") * sensitivityX;
-        print("rotationY: " + rotationY);
-        print("rotationX: " + rotationX);
 
         rotArrayY.Add(rotationY);
         rotArrayX.Add(rotationX);
-        //print(rotArrayX.ToArray().ToString());
-        //print(rotArrayY.ToArray().ToString());
 
         if (rotArrayY.Count >= frameCounter)
         {
@@ -125,7 +130,28 @@ public class CannonBehavior : MonoBehaviour {
         Quaternion xQuaternion = Quaternion.AngleAxis(rotAverageX, Vector3.up);
 
         transform.localRotation = originalRotation * xQuaternion * yQuaternion;
+        AlignRicochetArrows();
 
+    }
+
+    private void AlignRicochetArrows()
+    {
+        float radius = sphereCollider.radius * sphereCollider.transform.localScale.x;
+        Vector3 origin = sphereCollider.transform.position;
+        Vector3 direction = CannonBarrel.transform.up; //due to some bad orientation of the model, this is the correct orientation
+        Physics.SphereCast(origin, radius, direction, out hitInfo, 10f, 1 << 8);
+
+        Vector3 collisionPoint = hitInfo.point;
+        Vector3 newDirection = Vector3.Reflect(direction, hitInfo.normal);
+        if(Input.GetKeyUp(KeyCode.F))
+        {
+            //Draw the orientation
+            Debug.DrawLine(origin, origin + direction, Color.red, 480f);
+            Debug.DrawLine(origin, hitInfo.point, Color.green, 480f);
+            Debug.DrawLine(collisionPoint, collisionPoint + newDirection, Color.blue, 480f);
+        }
+        RicochetArrows.transform.position = collisionPoint;
+        RicochetArrows.transform.rotation = Quaternion.LookRotation(newDirection);
     }
 
     public static float ClampAngle(float angle, float min, float max)
