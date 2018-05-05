@@ -106,24 +106,19 @@ public class SuperballBehavior : MonoBehaviour
         //just a quick copy and paste to see if separating these two control blocks have to be together
         if (other.gameObject.GetComponent<MirrorBehavior>() != null)
         {
-            hitBreakableObject = true;
-        }
-        else
-        {
-            hitBreakableObject = false;
-        }
-
-        if (hitBreakableObject)
-        {
             HandleBreakableObjectCollision();
         }
         else
         {
             HandleUnbreakableObjectCollision();
         }
+
         CheckSuperballVelocity(this.GetComponent<Rigidbody>().velocity);
-        /* I need to comment out this block to see what's causing things to go wrong.
-         * Vector3 nextBestBreakableObject = Vector3.zero;
+        /* This block is designed to reorient the ball's trajectory to get as close to another breakable object as possible
+         * It's like a "smart ball" that will try to adjust itself mid collision.
+         * It's not designed to be perfect. It won't hit everything.
+         * 
+         * 
         if (!NextCollisionIsBreakable())
         {
             nextBestBreakableObject = FindClosestBreakableObject();
@@ -134,6 +129,109 @@ public class SuperballBehavior : MonoBehaviour
             }
         }*/
         
+    }
+
+    private void HandleBreakableObjectCollision()
+    {
+        Debug.Log("Handling BREAKABLE Object collision!");
+        this.IncrementVelocityFixed(0.05f);
+    }
+
+    private void HandleUnbreakableObjectCollision()
+    {
+        Debug.Log("Handling a SOLID Object collision!");
+        this.DecrementVelocityFixed(-0.1f);
+    }
+
+    //NOTE: dampening the speed means the velocity must move to 0.0f
+    //      but in a 3d coordinate system the velocity's components
+    //      could be positive or negative. So I have to keep track of that.
+    private void IncrementVelocityFixed(float fixedAmount)
+    {
+        float increment = Mathf.Abs(fixedAmount);
+        float sumOfComponents = Mathf.Abs(rBody.velocity.x) + Mathf.Abs(rBody.velocity.y) + Mathf.Abs(rBody.velocity.z);
+        float xIncrement = rBody.velocity.x / sumOfComponents * increment;
+        float yIncrement = rBody.velocity.y / sumOfComponents * increment;
+        float zIncrement = rBody.velocity.z / sumOfComponents * increment;
+
+        rBody.velocity = new Vector3(rBody.velocity.x + xIncrement,
+                                 rBody.velocity.y + yIncrement,
+                                 rBody.velocity.z + zIncrement);
+    }
+
+    private void DecrementVelocityFixed(float fixedAmount)
+    {
+        float increment = Mathf.Abs(fixedAmount);
+        float sumOfComponents = Mathf.Abs(rBody.velocity.x) + Mathf.Abs(rBody.velocity.y) + Mathf.Abs(rBody.velocity.z);
+        float xIncrement = rBody.velocity.x / sumOfComponents * increment;
+        float yIncrement = rBody.velocity.y / sumOfComponents * increment;
+        float zIncrement = rBody.velocity.z / sumOfComponents * increment;
+
+        rBody.velocity = new Vector3(rBody.velocity.x - xIncrement,
+                                 rBody.velocity.y - yIncrement,
+                                 rBody.velocity.z - zIncrement);
+    }
+
+    /*
+     *
+     *                  SMART BALL TRACKING METHODS
+     * 
+     */
+
+    // checks to see if the next collideable object is breakable.
+    private bool NextCollisionIsBreakable()
+    {
+        return (nextCollisionObject.layer == collisionLayer);
+    }
+
+    // Returns a vector colliding with the closest breakable object 
+    // within the radial bounds of the superball's forward vector.
+    // Returns the zero Vector if no breakable object is found.
+    private Vector3 FindClosestBreakableObject()
+    {
+        Vector3 closestObject = Vector3.zero;
+        
+        Collider[] colliders;
+        colliders = Physics.OverlapSphere(this.transform.position, 6f, collisionLayer);
+        float closestObjectTheta = maxObjectDeviation;
+        for(int i = 0; i < colliders.Length; i++)
+        {
+            Vector3 colliderPosition = colliders[i].transform.position;
+            Vector3 colliderVector = colliderPosition - this.transform.position;
+            //TODO: check to see if the collision point from the Overlap sphere is suitable for
+            //the next collision of the superball. It's possible I may need to do a SphereCast
+            //in the object's direction to determine the precise location of the target.
+            // otherwise, trajectories could be off by a few hundredths of a unit and mess up the physics.
+            Vector3 currentVector = GetComponent<Rigidbody>().velocity;
+            float theta = Vector3.Angle(currentVector, colliderVector);
+            if(theta < closestObjectTheta)
+            {
+                closestObject = colliders[i].ClosestPointOnBounds(transform.position);
+            }
+        }
+        
+        return closestObject;
+    }
+
+    private void ReadjustSuperballTrajectory(Vector3 nextCollisionPoint)
+    {
+        rBody = GetComponent<Rigidbody>();
+        float speed = rBody.velocity.magnitude;
+        Vector3 newForward = (nextCollisionPoint - transform.position).normalized;
+        rBody.velocity = newForward * speed;
+    }
+
+    /*
+     * 
+     *                      DEBUGGING METHODS
+     * 
+     */
+
+    //Checks to see if the superball has gone past the objecct whose collision
+    //was predicted by our trajectory calculations in OnCollisionExit()
+    private bool ObjectPassedCollision()
+    {
+        return true;
     }
 
     void CheckSuperballVelocity(Vector3 velocity)
@@ -180,116 +278,5 @@ public class SuperballBehavior : MonoBehaviour
 #endif
         }
 
-    }
-
-    private void HandleBreakableObjectCollision()
-    {
-        Debug.Log("Handling BREAKABLE Object collision!");
-        this.IncrementVelocityFixed(0.05f);
-    }
-
-    private void HandleUnbreakableObjectCollision()
-    {
-        Debug.Log("Handling a SOLID Object collision!");
-        this.DecrementVelocityFixed(-0.1f);
-    }
-
-    // checks to see if the next collideable object is breakable.
-    private bool NextCollisionIsBreakable()
-    {
-        return (nextCollisionObject.layer == collisionLayer);
-    }
-
-    // Returns a vector colliding with the closest breakable object 
-    // within the radial bounds of the superball's forward vector.
-    // Returns the zero Vector if no breakable object is found.
-    private Vector3 FindClosestBreakableObject()
-    {
-        Vector3 closestObject = Vector3.zero;
-        
-        Collider[] colliders;
-        colliders = Physics.OverlapSphere(this.transform.position, 6f, collisionLayer);
-        float closestObjectTheta = maxObjectDeviation;
-        for(int i = 0; i < colliders.Length; i++)
-        {
-            Vector3 colliderPosition = colliders[i].transform.position;
-            Vector3 colliderVector = colliderPosition - this.transform.position;
-            //TODO: check to see if the collision point from the Overlap sphere is suitable for
-            //the next collision of the superball. It's possible I may need to do a SphereCast
-            //in the object's direction to determine the precise location of the target.
-            // otherwise, trajectories could be off by a few hundredths of a unit and mess up the physics.
-            Vector3 currentVector = GetComponent<Rigidbody>().velocity;
-            float theta = Vector3.Angle(currentVector, colliderVector);
-            if(theta < closestObjectTheta)
-            {
-                closestObject = colliders[i].ClosestPointOnBounds(transform.position);
-            }
-        }
-        
-        return closestObject;
-    }
-
-    //Checks to see if the superball has gone past the objecct whose collision
-    //was predicted by our trajectory calculations in OnCollisionExit()
-    private bool ObjectPassedCollision()
-    {
-        return true;
-    }
-
-    private void ReadjustSuperballTrajectory(Vector3 nextCollisionPoint)
-    {
-        rBody = GetComponent<Rigidbody>();
-        float speed = rBody.velocity.magnitude;
-        Vector3 newForward = (nextCollisionPoint - transform.position).normalized;
-        rBody.velocity = newForward * speed;
-    }
-
-    // increases or decreases the velocity of a rigidbody by a fixed amount
-    // this is done by finding the change between the velocity's magnitude
-    // and the increment (a scalar float value). Then multiplying the Vector3
-    // by a scalar 1.0f + increment_percentage
-    private void ChangeVelocityByIncrement(float increment)
-    {
-        Vector3 rBodyVel = GetComponent<Rigidbody>().velocity;
-        float magnitude = rBodyVel.magnitude;
-        float difference = increment / magnitude;
-        GetComponent<Rigidbody>().velocity *= (1.0f + difference);
-    }
-
-    // changes the velocity of a rigidbody by a scalar value
-    private void ChangeVelocityByScalar(float scalar)
-    {
-        GetComponent<Rigidbody>().velocity *= scalar;
-    }
-
-    //NOTE: dampening the speed means the velocity must move to 0.0f
-    //      but in a 3d coordinate system the velocity's components
-    //      could be positive or negative. So I have to keep track of that.
-    private void IncrementVelocityFixed(float fixedAmount)
-    {
-        float increment = Mathf.Abs(fixedAmount);
-        float sumOfComponents = Mathf.Abs(rBody.velocity.x) + Mathf.Abs(rBody.velocity.y) + Mathf.Abs(rBody.velocity.z);
-        float xIncrement = rBody.velocity.x / sumOfComponents * increment;
-        float yIncrement = rBody.velocity.y / sumOfComponents * increment;
-        float zIncrement = rBody.velocity.z / sumOfComponents * increment;
-
-        rBody.velocity = new Vector3(rBody.velocity.x + xIncrement,
-                                 rBody.velocity.y + yIncrement,
-                                 rBody.velocity.z + zIncrement);
-
-
-    }
-
-    private void DecrementVelocityFixed(float fixedAmount)
-    {
-        float increment = Mathf.Abs(fixedAmount);
-        float sumOfComponents = Mathf.Abs(rBody.velocity.x) + Mathf.Abs(rBody.velocity.y) + Mathf.Abs(rBody.velocity.z);
-        float xIncrement = rBody.velocity.x / sumOfComponents * increment;
-        float yIncrement = rBody.velocity.y / sumOfComponents * increment;
-        float zIncrement = rBody.velocity.z / sumOfComponents * increment;
-
-        rBody.velocity = new Vector3(rBody.velocity.x - xIncrement,
-                                 rBody.velocity.y - yIncrement,
-                                 rBody.velocity.z - zIncrement);
     }
 }
