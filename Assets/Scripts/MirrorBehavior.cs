@@ -24,7 +24,7 @@ public class MirrorBehavior : MonoBehaviour {
 	{
 	}
 
-    void OnCollisionEnter(Collision collision)
+    void OnCollisionExit(Collision collision)
     {
         float forceOfCollision = collision.collider.gameObject.GetComponent<Rigidbody>().velocity.magnitude;
         // magnitude of a vector is its length, and it tells us how fast the ball is going
