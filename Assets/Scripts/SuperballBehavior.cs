@@ -90,7 +90,7 @@ public class SuperballBehavior : MonoBehaviour
         Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.yellow, 480f);
 
         lastCollisionLocation = this.transform.position;
-        print(this.name + "'s velocity: " + this.GetComponent<Rigidbody>().velocity);
+        //print(this.name + "'s velocity: " + this.GetComponent<Rigidbody>().velocity);
         print(this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude);
         Ray ray = new Ray(lastCollisionLocation, this.GetComponent<Rigidbody>().velocity.normalized);
         RaycastHit hitInfo;
@@ -191,7 +191,7 @@ public class SuperballBehavior : MonoBehaviour
     private void HandleUnbreakableObjectCollision()
     {
         Debug.Log("Handling a SOLID Object collision!");
-        this.IncrementVelocityFixed(-0.1f);
+        this.DecrementVelocityFixed(-0.1f);
     }
 
     // checks to see if the next collideable object is breakable.
@@ -267,14 +267,29 @@ public class SuperballBehavior : MonoBehaviour
     //      could be positive or negative. So I have to keep track of that.
     private void IncrementVelocityFixed(float fixedAmount)
     {
+        float increment = Mathf.Abs(fixedAmount);
         float sumOfComponents = Mathf.Abs(rBody.velocity.x) + Mathf.Abs(rBody.velocity.y) + Mathf.Abs(rBody.velocity.z);
-        float xIncrement = rBody.velocity.x / sumOfComponents * fixedAmount;
-        float yIncrement = rBody.velocity.y / sumOfComponents * fixedAmount;
-        float zIncrement = rBody.velocity.z / sumOfComponents * fixedAmount;
+        float xIncrement = rBody.velocity.x / sumOfComponents * increment;
+        float yIncrement = rBody.velocity.y / sumOfComponents * increment;
+        float zIncrement = rBody.velocity.z / sumOfComponents * increment;
+
         rBody.velocity = new Vector3(rBody.velocity.x + xIncrement,
                                  rBody.velocity.y + yIncrement,
                                  rBody.velocity.z + zIncrement);
 
 
+    }
+
+    private void DecrementVelocityFixed(float fixedAmount)
+    {
+        float increment = Mathf.Abs(fixedAmount);
+        float sumOfComponents = Mathf.Abs(rBody.velocity.x) + Mathf.Abs(rBody.velocity.y) + Mathf.Abs(rBody.velocity.z);
+        float xIncrement = rBody.velocity.x / sumOfComponents * increment;
+        float yIncrement = rBody.velocity.y / sumOfComponents * increment;
+        float zIncrement = rBody.velocity.z / sumOfComponents * increment;
+
+        rBody.velocity = new Vector3(rBody.velocity.x - xIncrement,
+                                 rBody.velocity.y - yIncrement,
+                                 rBody.velocity.z - zIncrement);
     }
 }
