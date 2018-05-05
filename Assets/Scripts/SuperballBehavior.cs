@@ -13,6 +13,7 @@ public class SuperballBehavior : MonoBehaviour
     public SuperBallState ballState;
     private Vector3 currentDirection;
     private Rigidbody rBody;
+    private GameObject CannonBarrel;
 
     private Vector3 lastCollisionLocation;
     private Vector3 nextCollisionLocation; //the destination of the superball
@@ -23,11 +24,13 @@ public class SuperballBehavior : MonoBehaviour
     private int xZeroVelocityCount, yZeroVelocityCount, zZeroVelocityCount;
     public Vector3 forward = new Vector3(1f, 0f, 1f);
     public float velocity = 1.0f;
+    public float maxSpeed = 22.352f; //meters per second (50mph)
 
     // Use this for initialization
     void Start()
     {
         ballState = SuperBallState.ATREST;
+        CannonBarrel = GameObject.Find("Cannon");
         rBody = this.GetComponent<Rigidbody>();
         forward.Normalize();
         hitBreakableObject = false;
@@ -67,9 +70,9 @@ public class SuperballBehavior : MonoBehaviour
         GameObject.Find("RoomCamera").GetComponent<Camera>().enabled = true;
         print("Adding force!");
         ballState = SuperBallState.LIVE;
-        rBody.AddForce(forward.normalized * velocity, ForceMode.Impulse);
-        //IncrementPosition(); //TODO: implement
+        rBody.AddForce(CannonBarrel.transform.up.normalized * velocity, ForceMode.Impulse);
         lastCollisionLocation = this.transform.position;
+        //Debug.DrawLine(rBody.position, rBody.position + CannonBarrel.transform.up.normalized * 5f, Color.cyan, 480f);
     }
 
 
@@ -79,18 +82,14 @@ public class SuperballBehavior : MonoBehaviour
         Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.yellow, 480f);
         
         lastCollisionLocation = this.transform.position;
-        if(other.gameObject.GetComponent<MirrorBehavior>() != null)
-        {
-            hitBreakableObject = true;
-        }
-        else
-        {
-            hitBreakableObject = false;
-        }
+
     }
 
     void OnCollisionExit(Collision other)
     {
+        Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.yellow, 480f);
+
+        lastCollisionLocation = this.transform.position;
         print(this.name + "'s velocity: " + this.GetComponent<Rigidbody>().velocity);
         print(this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude);
         Ray ray = new Ray(lastCollisionLocation, this.GetComponent<Rigidbody>().velocity.normalized);
@@ -103,6 +102,15 @@ public class SuperballBehavior : MonoBehaviour
         else
         {
             Debug.Log("Error calculating next collision!");
+        }
+        //just a quick copy and paste to see if separating these two control blocks have to be together
+        if (other.gameObject.GetComponent<MirrorBehavior>() != null)
+        {
+            hitBreakableObject = true;
+        }
+        else
+        {
+            hitBreakableObject = false;
         }
 
         if (hitBreakableObject)
@@ -164,7 +172,7 @@ public class SuperballBehavior : MonoBehaviour
 #endif
         }
 
-        if (xZeroVelocityCount >= 4 || yZeroVelocityCount >= 4 || zZeroVelocityCount >= 4)
+        else if (deadAxes == 1)
         {
             Debug.LogErrorFormat("Error: Velocity in at least one direction has been nullified: {0}", rBody.velocity);
 #if UNITY_EDITOR
@@ -177,13 +185,13 @@ public class SuperballBehavior : MonoBehaviour
     private void HandleBreakableObjectCollision()
     {
         Debug.Log("Handling BREAKABLE Object collision!");
-        this.ChangeVelocityByIncrement(0.05f);
+        this.IncrementVelocityFixed(0.05f);
     }
 
     private void HandleUnbreakableObjectCollision()
     {
-        Debug.Log("Handling an UNbreakable Object collision!");
-        this.ChangeVelocityByIncrement(-0.05f);
+        Debug.Log("Handling a SOLID Object collision!");
+        this.IncrementVelocityFixed(-0.1f);
     }
 
     // checks to see if the next collideable object is breakable.
@@ -252,5 +260,21 @@ public class SuperballBehavior : MonoBehaviour
     private void ChangeVelocityByScalar(float scalar)
     {
         GetComponent<Rigidbody>().velocity *= scalar;
+    }
+
+    //NOTE: dampening the speed means the velocity must move to 0.0f
+    //      but in a 3d coordinate system the velocity's components
+    //      could be positive or negative. So I have to keep track of that.
+    private void IncrementVelocityFixed(float fixedAmount)
+    {
+        float sumOfComponents = Mathf.Abs(rBody.velocity.x) + Mathf.Abs(rBody.velocity.y) + Mathf.Abs(rBody.velocity.z);
+        float xIncrement = rBody.velocity.x / sumOfComponents * fixedAmount;
+        float yIncrement = rBody.velocity.y / sumOfComponents * fixedAmount;
+        float zIncrement = rBody.velocity.z / sumOfComponents * fixedAmount;
+        rBody.velocity = new Vector3(rBody.velocity.x + xIncrement,
+                                 rBody.velocity.y + yIncrement,
+                                 rBody.velocity.z + zIncrement);
+
+
     }
 }
