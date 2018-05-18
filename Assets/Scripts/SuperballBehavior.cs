@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class SuperballBehavior : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class SuperballBehavior : MonoBehaviour
     private Vector3 currentDirection;
     private Rigidbody rBody;
     private GameObject CannonBarrel;
+    public Collider ConeCast;
 
     private Vector3 lastCollisionLocation;
     private Vector3 nextCollisionLocation; //the destination of the superball
@@ -87,11 +89,18 @@ public class SuperballBehavior : MonoBehaviour
 
     void OnCollisionExit(Collision other)
     {
+        //actual ball motion
         Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.yellow, 480f);
 
         lastCollisionLocation = this.transform.position;
         //print(this.name + "'s velocity: " + this.GetComponent<Rigidbody>().velocity);
         print(this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude);
+
+        Vector3 newDirection = GetComponent<Rigidbody>().velocity;
+
+        //The line representing the velocity of our ball
+        Vector3 origin1 = GameObject.Find("Sphere").transform.position;
+        Debug.DrawLine(origin1, origin1 + newDirection, Color.white, 480f);
         Ray ray = new Ray(lastCollisionLocation, this.GetComponent<Rigidbody>().velocity.normalized);
         RaycastHit hitInfo;
         if (Physics.Raycast(ray, out hitInfo, 30f, 1 << 8)) //collisions is layer 8, so 1 << 8 is necessary
@@ -117,18 +126,28 @@ public class SuperballBehavior : MonoBehaviour
         /* This block is designed to reorient the ball's trajectory to get as close to another breakable object as possible
          * It's like a "smart ball" that will try to adjust itself mid collision.
          * It's not designed to be perfect. It won't hit everything.
-         * 
-         * 
-        if (!NextCollisionIsBreakable())
+         */
+
+        Vector3 upVector = ConeCast.transform.forward;
+        Debug.DrawLine(origin1, origin1 + upVector * 100f, Color.grey, 480f);
+        //ConeCast.transform.rotation = Quaternion.LookRotation(newDirection + origin1, upVector);
+        ConeCast.transform.LookAt(newDirection + origin1);
+        Debug.DrawLine(transform.position, nextCollisionLocation, Color.magenta);
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPaused = true;
+#endif
+        /*if (!NextCollisionIsBreakable())
         {
-            nextBestBreakableObject = FindClosestBreakableObject();
+            Vector3 nextBestBreakableObject = FindClosestBreakableObject(newDirection);
             if (nextBestBreakableObject != Vector3.zero)
             {
                 Debug.Log("Readjusting superball's trajectory!");
                 ReadjustSuperballTrajectory(nextBestBreakableObject);
             }
         }*/
-        
+
+
+
     }
 
     private void HandleBreakableObjectCollision()
@@ -187,15 +206,18 @@ public class SuperballBehavior : MonoBehaviour
     // Returns a vector colliding with the closest breakable object 
     // within the radial bounds of the superball's forward vector.
     // Returns the zero Vector if no breakable object is found.
-    private Vector3 FindClosestBreakableObject()
+    private Vector3 FindClosestBreakableObject(Vector3 newDirection)
     {
         Vector3 closestObject = Vector3.zero;
         
-        Collider[] colliders;
-        colliders = Physics.OverlapSphere(this.transform.position, 6f, collisionLayer);
+        ConeCast.GetComponent<ConeCastColliderCollector>().ClearColliderContainer();
+        ConeCast.transform.rotation = Quaternion.LookRotation(newDirection);
+        List<Collider> colliders = ConeCast.GetComponent<ConeCastColliderCollector>().GetColliderContainer();
         float closestObjectTheta = maxObjectDeviation;
-        for(int i = 0; i < colliders.Length; i++)
+        for(int i = 0; i < colliders.Count; i++)
         {
+            if (colliders[i].gameObject.GetComponent<MirrorBehavior>() == null)
+                continue;
             Vector3 colliderPosition = colliders[i].transform.position;
             Vector3 colliderVector = colliderPosition - this.transform.position;
             //TODO: check to see if the collision point from the Overlap sphere is suitable for
@@ -207,6 +229,7 @@ public class SuperballBehavior : MonoBehaviour
             if(theta < closestObjectTheta)
             {
                 closestObject = colliders[i].ClosestPointOnBounds(transform.position);
+                closestObjectTheta = theta;
             }
         }
         
