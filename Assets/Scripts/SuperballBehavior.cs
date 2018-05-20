@@ -81,6 +81,8 @@ public class SuperballBehavior : MonoBehaviour
     //USe this method to track issues you might have with collisions
     void OnCollisionEnter(Collision other)
     {
+        if (ballState != SuperBallState.LIVE)
+            return;
         Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.yellow, 480f);
         
         lastCollisionLocation = this.transform.position;
@@ -89,6 +91,8 @@ public class SuperballBehavior : MonoBehaviour
 
     void OnCollisionExit(Collision other)
     {
+        if (ballState != SuperBallState.LIVE)
+            return;
         //actual ball motion
         Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.yellow, 480f);
 
@@ -133,9 +137,9 @@ public class SuperballBehavior : MonoBehaviour
         //ConeCast.transform.rotation = Quaternion.LookRotation(newDirection + origin1, upVector);
         ConeCast.transform.LookAt(newDirection + origin1);
         Debug.DrawLine(transform.position, nextCollisionLocation, Color.magenta);
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPaused = true;
-#endif
+//#if UNITY_EDITOR
+  //      UnityEditor.EditorApplication.isPaused = true;
+//#endif
         /*if (!NextCollisionIsBreakable())
         {
             Vector3 nextBestBreakableObject = FindClosestBreakableObject(newDirection);
