@@ -12,34 +12,33 @@ public class SuperballBehavior : MonoBehaviour
         DEAD
     }
     public SuperBallState ballState;
-    private Vector3 currentDirection;
-    private Rigidbody rBody;
-    private GameObject CannonBarrel;
-    public Collider ConeCast;
-
-    private Vector3 lastCollisionLocation;
-    private Vector3 nextCollisionLocation; //the destination of the superball
-    private GameObject nextCollisionObject;
-    private int collisionLayer = 1 << 8;
-    private float maxObjectDeviation = 20f; //in degrees
-    private bool hitBreakableObject;
-    private int xZeroVelocityCount, yZeroVelocityCount, zZeroVelocityCount;
-    public Vector3 forward = new Vector3(1f, 0f, 1f);
     public float velocity = 1.0f;
     public float maxSpeed = 22.352f; //meters per second (50mph)
+    public Vector3 forward = new Vector3(1f, 0f, 1f);
+    public Collider ConeCast;
+
+    private bool hitBreakableObject;
+    private int collisionLayer = 1 << 8;
+    private int xZeroVelocityCount, yZeroVelocityCount, zZeroVelocityCount;
+    private float maxObjectDeviation = 20f; //in degrees
+    private Vector3 lastCollisionLocation, nextCollisionLocation, currentDirection;
+    private GameObject nextCollisionObject, CannonBarrel;
+    private Rigidbody rBody;
 
     // Use this for initialization
     void Start()
     {
         ballState = SuperBallState.ATREST;
-        CannonBarrel = GameObject.Find("Cannon");
-        rBody = this.GetComponent<Rigidbody>();
-        forward.Normalize();
         hitBreakableObject = false;
         xZeroVelocityCount = 0;
         yZeroVelocityCount = 0;
         zZeroVelocityCount = 0;
-        GameObject.Find("RoomCamera").GetComponent<Camera>().enabled = false ;
+        forward.Normalize();
+
+        CannonBarrel = GameObject.Find("Cannon");
+        rBody = this.GetComponent<Rigidbody>();
+
+        GameObject.Find("RoomCamera").GetComponent<Camera>().enabled = false;
 
     }
 
@@ -79,7 +78,6 @@ public class SuperballBehavior : MonoBehaviour
         ballState = SuperBallState.LIVE;
         rBody.AddForce(CannonBarrel.transform.up.normalized * velocity, ForceMode.Impulse);
         lastCollisionLocation = this.transform.position;
-        //Debug.DrawLine(rBody.position, rBody.position + CannonBarrel.transform.up.normalized * 5f, Color.cyan, 480f);
     }
 
 
@@ -98,18 +96,18 @@ public class SuperballBehavior : MonoBehaviour
     {
         if (ballState != SuperBallState.LIVE)
             return;
-        //actual ball motion
+
         Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.yellow, 480f);
 
         lastCollisionLocation = this.transform.position;
-        //print(this.name + "'s velocity: " + this.GetComponent<Rigidbody>().velocity);
         print(this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude);
 
         Vector3 newDirection = GetComponent<Rigidbody>().velocity;
 
         //The line representing the velocity of our ball
-        Vector3 origin1 = GameObject.Find("Sphere").transform.position;
-        Debug.DrawLine(origin1, origin1 + newDirection, Color.white, 480f);
+        Vector3 origin = GameObject.Find("Sphere").transform.position;
+        Debug.DrawLine(origin, origin + newDirection, Color.white, 480f);
+
         Ray ray = new Ray(lastCollisionLocation, this.GetComponent<Rigidbody>().velocity.normalized);
         RaycastHit hitInfo;
         if (Physics.Raycast(ray, out hitInfo, 30f, 1 << 8)) //collisions is layer 8, so 1 << 8 is necessary
@@ -121,7 +119,7 @@ public class SuperballBehavior : MonoBehaviour
         {
             Debug.Log("Error calculating next collision!");
         }
-        //just a quick copy and paste to see if separating these two control blocks have to be together
+
         if (other.gameObject.GetComponent<MirrorBehavior>() != null)
         {
             HandleBreakableObjectCollision();
@@ -132,31 +130,11 @@ public class SuperballBehavior : MonoBehaviour
         }
 
         CheckSuperballVelocity(this.GetComponent<Rigidbody>().velocity);
-        /* This block is designed to reorient the ball's trajectory to get as close to another breakable object as possible
-         * It's like a "smart ball" that will try to adjust itself mid collision.
-         * It's not designed to be perfect. It won't hit everything.
-         */
 
         Vector3 upVector = ConeCast.transform.forward;
-        Debug.DrawLine(origin1, origin1 + upVector * 100f, Color.grey, 480f);
-        //ConeCast.transform.rotation = Quaternion.LookRotation(newDirection + origin1, upVector);
-        ConeCast.transform.LookAt(newDirection + origin1);
+        Debug.DrawLine(origin, origin + upVector * 100f, Color.grey, 480f);
+        ConeCast.transform.LookAt(newDirection + origin);
         Debug.DrawLine(transform.position, nextCollisionLocation, Color.magenta);
-//#if UNITY_EDITOR
-  //      UnityEditor.EditorApplication.isPaused = true;
-//#endif
-        /*if (!NextCollisionIsBreakable())
-        {
-            Vector3 nextBestBreakableObject = FindClosestBreakableObject(newDirection);
-            if (nextBestBreakableObject != Vector3.zero)
-            {
-                Debug.Log("Readjusting superball's trajectory!");
-                ReadjustSuperballTrajectory(nextBestBreakableObject);
-            }
-        }*/
-
-
-
     }
 
     private void HandleBreakableObjectCollision()
@@ -198,59 +176,6 @@ public class SuperballBehavior : MonoBehaviour
         rBody.velocity = new Vector3(rBody.velocity.x - xIncrement,
                                  rBody.velocity.y - yIncrement,
                                  rBody.velocity.z - zIncrement);
-    }
-
-    /*
-     *
-     *                  SMART BALL TRACKING METHODS
-     * 
-     */
-
-    // checks to see if the next collideable object is breakable.
-    private bool NextCollisionIsBreakable()
-    {
-        return (nextCollisionObject.layer == collisionLayer);
-    }
-
-    // Returns a vector colliding with the closest breakable object 
-    // within the radial bounds of the superball's forward vector.
-    // Returns the zero Vector if no breakable object is found.
-    private Vector3 FindClosestBreakableObject(Vector3 newDirection)
-    {
-        Vector3 closestObject = Vector3.zero;
-        
-        ConeCast.GetComponent<ConeCastColliderCollector>().ClearColliderContainer();
-        ConeCast.transform.rotation = Quaternion.LookRotation(newDirection);
-        List<Collider> colliders = ConeCast.GetComponent<ConeCastColliderCollector>().GetColliderContainer();
-        float closestObjectTheta = maxObjectDeviation;
-        for(int i = 0; i < colliders.Count; i++)
-        {
-            if (colliders[i].gameObject.GetComponent<MirrorBehavior>() == null)
-                continue;
-            Vector3 colliderPosition = colliders[i].transform.position;
-            Vector3 colliderVector = colliderPosition - this.transform.position;
-            //TODO: check to see if the collision point from the Overlap sphere is suitable for
-            //the next collision of the superball. It's possible I may need to do a SphereCast
-            //in the object's direction to determine the precise location of the target.
-            // otherwise, trajectories could be off by a few hundredths of a unit and mess up the physics.
-            Vector3 currentVector = GetComponent<Rigidbody>().velocity;
-            float theta = Vector3.Angle(currentVector, colliderVector);
-            if(theta < closestObjectTheta)
-            {
-                closestObject = colliders[i].ClosestPointOnBounds(transform.position);
-                closestObjectTheta = theta;
-            }
-        }
-        
-        return closestObject;
-    }
-
-    private void ReadjustSuperballTrajectory(Vector3 nextCollisionPoint)
-    {
-        rBody = GetComponent<Rigidbody>();
-        float speed = rBody.velocity.magnitude;
-        Vector3 newForward = (nextCollisionPoint - transform.position).normalized;
-        rBody.velocity = newForward * speed;
     }
 
     /*
