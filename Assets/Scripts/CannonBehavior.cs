@@ -59,6 +59,9 @@ public class CannonBehavior : MonoBehaviour {
 
     void UpdateControls()
     {
+        if (sbBehavior.ballState == SuperballBehavior.SuperBallState.LIVE)
+            return;
+
         float currentSpeed = translationSpeed;
         bool goFaster = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         if (goFaster) currentSpeed += shift;
