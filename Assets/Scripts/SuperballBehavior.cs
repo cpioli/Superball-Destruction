@@ -68,6 +68,11 @@ public class SuperballBehavior : MonoBehaviour
         if (!Input.GetKeyUp(KeyCode.Space))
             return;
 
+        LaunchBall();
+    }
+
+    void LaunchBall()
+    {
         GameObject.Find("Main Camera").GetComponent<Camera>().enabled = false;
         GameObject.Find("RoomCamera").GetComponent<Camera>().enabled = true;
         print("Adding force!");
