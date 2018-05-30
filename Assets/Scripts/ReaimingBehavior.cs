@@ -46,6 +46,7 @@ public class ReaimingBehavior : MonoBehaviour {
         sbBehavior.ballState = SuperballBehavior.SuperBallState.DEAD;
         superballRBody.velocity = Vector3.zero;
         superballRBody.angularVelocity = Vector3.zero;
+        superballRBody.useGravity = false;
     }
 
     private void PositionAndOrientCamera(Collision collision)
