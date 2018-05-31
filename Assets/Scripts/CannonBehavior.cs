@@ -30,12 +30,14 @@ public class CannonBehavior : MonoBehaviour {
     public float frameCounter = 20;
 
     Quaternion originalRotation;
+
     //reusable components to save memory.
     public GameObject RicochetArrows;
     public GameObject CannonBarrel;
     private SphereCollider sphereCollider;
     private RaycastHit hitInfo;
     private SuperballBehavior sbBehavior;
+    private ArrowsBehavior arrowsBehavior;
 
     // Use this for initialization
     void Start () {
@@ -48,6 +50,7 @@ public class CannonBehavior : MonoBehaviour {
         sphereCollider = GameObject.Find("Sphere").GetComponent<SphereCollider>();
         originalRotation = transform.localRotation;
         sbBehavior = GameObject.Find("Sphere").GetComponent<SuperballBehavior>();
+        arrowsBehavior = GameObject.Find("Arrows").GetComponent<ArrowsBehavior>();
     }
 	
 	// Update is called once per frame
@@ -133,28 +136,10 @@ public class CannonBehavior : MonoBehaviour {
         Quaternion xQuaternion = Quaternion.AngleAxis(rotAverageX, Vector3.up);
 
         transform.localRotation = originalRotation * xQuaternion * yQuaternion;
-        AlignRicochetArrows();
+        arrowsBehavior.AlignArrowsForAiming(
+            this.transform.position, 
+            CannonBarrel.transform.rotation);
 
-    }
-
-    private void AlignRicochetArrows()
-    {
-        float radius = sphereCollider.radius * sphereCollider.transform.localScale.x;
-        Vector3 origin = sphereCollider.transform.position;
-        Vector3 direction = CannonBarrel.transform.up; //due to some bad orientation of the model, this is the correct orientation
-        Physics.SphereCast(origin, radius, direction, out hitInfo, 10f, 1 << 8);
-
-        Vector3 collisionPoint = hitInfo.point;
-        Vector3 newDirection = Vector3.Reflect(direction, hitInfo.normal);
-        if(Input.GetKeyUp(KeyCode.F))
-        {
-            //Draw the orientation
-            Debug.DrawLine(origin, origin + direction, Color.red, 480f);
-            Debug.DrawLine(origin, hitInfo.point, Color.green, 480f);
-            Debug.DrawLine(collisionPoint, collisionPoint + newDirection, Color.blue, 480f);
-        }
-        RicochetArrows.transform.position = collisionPoint;
-        RicochetArrows.transform.rotation = Quaternion.LookRotation(newDirection);
     }
 
     public static float ClampAngle(float angle, float min, float max)

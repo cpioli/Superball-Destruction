@@ -18,7 +18,7 @@ public class ArrowsBehavior : MonoBehaviour {
 
     }
 
-    public void AlignRicochetArrows(Vector3 position, Quaternion orientation)
+    public void AlignArrowsForAiming(Vector3 position, Quaternion orientation)
     {
         //step1: figure out how to orient the first arrow (this)
         transform.position = position;
@@ -26,7 +26,7 @@ public class ArrowsBehavior : MonoBehaviour {
 
         //step2: figure out how to orient the second arrow (ricochet arrow)
         float radius = sphereCollider.radius * sphereCollider.transform.localScale.x;
-        Vector3 direction = orientation * Vector3.up;
+        Vector3 direction = transform.rotation * Vector3.forward;
         Vector3 origin = sphereCollider.transform.position;
         Physics.SphereCast(origin, radius, direction, out hitInfo, 10f, 1 << 8);
         Vector3 collisionPoint = hitInfo.point;
@@ -46,10 +46,22 @@ public class ArrowsBehavior : MonoBehaviour {
         }
     }
 
-    private void DrawDirectionalLines(Vector3 origin)
+    public void DeactivateArrows()
+    {
+        this.GetComponent<MeshRenderer>().enabled = false;
+        ricochetArrow.GetComponent<MeshRenderer>().enabled = false;
+    }
+
+    public void ActivateArrows()
+    {
+        this.GetComponent<MeshRenderer>().enabled = true;
+        ricochetArrow.GetComponent<MeshRenderer>().enabled = true;
+    }
+
+    public void DrawDirectionalLines(Vector3 origin)
     {
         Debug.DrawRay(origin, transform.rotation * Vector3.up, Color.gray, 480f);
-        Debug.DrawRay(origin,  transform.rotation * Vector3.down, Color.white, 480f);
+        Debug.DrawRay(origin, transform.rotation * Vector3.down, Color.white, 480f);
         Debug.DrawRay(origin, transform.rotation * Vector3.forward, Color.red, 480f);
         Debug.DrawRay(origin, transform.rotation * Vector3.back, Color.blue, 480f);
         Debug.DrawRay(origin, transform.rotation * Vector3.left, Color.green, 480f);
