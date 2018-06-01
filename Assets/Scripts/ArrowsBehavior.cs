@@ -42,7 +42,7 @@ public class ArrowsBehavior : MonoBehaviour {
         }
         if(Input.GetKeyUp(KeyCode.Z))
         {
-            DrawDirectionalLines(origin);
+            DrawDirectionalLines(origin, transform.rotation);
         }
     }
 
@@ -58,13 +58,13 @@ public class ArrowsBehavior : MonoBehaviour {
         ricochetArrow.GetComponent<MeshRenderer>().enabled = true;
     }
 
-    public void DrawDirectionalLines(Vector3 origin)
+    public void DrawDirectionalLines(Vector3 origin, Quaternion rotation)
     {
-        Debug.DrawRay(origin, transform.rotation * Vector3.up, Color.gray, 480f);
-        Debug.DrawRay(origin, transform.rotation * Vector3.down, Color.white, 480f);
-        Debug.DrawRay(origin, transform.rotation * Vector3.forward, Color.red, 480f);
-        Debug.DrawRay(origin, transform.rotation * Vector3.back, Color.blue, 480f);
-        Debug.DrawRay(origin, transform.rotation * Vector3.left, Color.green, 480f);
-        Debug.DrawRay(origin, transform.rotation * Vector3.right, Color.yellow, 480f);
+        Debug.DrawRay(origin, rotation * Vector3.up, Color.gray, 480f);
+        Debug.DrawRay(origin, rotation * Vector3.down, Color.white, 480f);
+        Debug.DrawRay(origin, rotation * Vector3.forward, Color.red, 480f);
+        Debug.DrawRay(origin, rotation * Vector3.back, Color.blue, 480f);
+        Debug.DrawRay(origin, rotation * Vector3.left, Color.green, 480f);
+        Debug.DrawRay(origin, rotation * Vector3.right, Color.yellow, 480f);
     }
 }
