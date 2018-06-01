@@ -12,11 +12,11 @@ public class ReaimingBehavior : MonoBehaviour {
     public float sensitivityX = 15F;
     public float sensitivityY = 15F;
 
-    public float minimumX = -360F;
-    public float maximumX = 360F;
+    float minimumX = -180f;
+    float maximumX = 180f;
 
-    public float minimumY = -60F;
-    public float maximumY = 60F;
+    float minimumY = -60F;
+    float maximumY = 60F;
 
     float rotationX = 0F;
     float rotationY = 0F;
@@ -29,12 +29,14 @@ public class ReaimingBehavior : MonoBehaviour {
 
     public float frameCounter = 20;
 
-    static Quaternion originalRotation;
+    static Quaternion startingRotation;
+    static Quaternion rigRotation;
 
     private bool reaimingActive;
     private float timeRemaining; //time left until the 
     private Vector3 ballPosition, ballVelocity;
-    private GameObject roomCamera; //we need the GO for movement and aiming purposes
+    private GameObject roomCameraRig; //
+    private GameObject roomCamera; 
     private Rigidbody superballRBody;
     private SuperballBehavior sbBehavior;
     private ArrowsBehavior arrowsBehavior;
@@ -43,9 +45,12 @@ public class ReaimingBehavior : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
+
         reaimingActive = false;
         timeRemaining = 0f;
         ballPosition = Vector3.zero;
+        roomCameraRig = GameObject.Find("RoomCameraRig");
+        rigRotation = roomCameraRig.transform.localRotation;
         roomCamera = GameObject.Find("RoomCamera");
         sbBehavior = GameObject.Find("Sphere").GetComponent<SuperballBehavior>();
         superballRBody = GameObject.Find("Sphere").GetComponent<Rigidbody>();
@@ -58,22 +63,23 @@ public class ReaimingBehavior : MonoBehaviour {
             UpdateAiming();
 	}
 
-    //TODO: 1) set superball behavior state to AT_REST
-    //      2) move the room camera to the ball's position
-    //      3) orient the camera pointing to the plate's normal
+    //TODO: 3) orient the camera pointing to the plate's normal
     //      4) turn on the arrow pointers
     //      5) turn on mouse controls
     //      6) limit range of camera movement (might require a new superball state)
     void OnCollisionEnter(Collision collision)
     {
+        print(collision.gameObject.name); //"Sphere"
+
         ballPosition = collision.gameObject.transform.position;
+        //Debug.DrawRay(ballPosition, collision.contacts[0].normal * 1.05f, Color.cyan, 480f);
+        
         ballVelocity = collision.gameObject.GetComponent<Rigidbody>().velocity;
         HaltSuperballMovement();
-
         PositionAndOrientCamera(collision);
-
-        arrowsBehavior.AlignArrowsForAiming(ballPosition, originalRotation * Quaternion.AngleAxis(90, Vector3.right));
-        arrowsBehavior.DrawDirectionalLines(ballPosition);
+        arrowsBehavior.AlignArrowsForAiming(ballPosition, startingRotation * Quaternion.AngleAxis(90, Vector3.right));
+        arrowsBehavior.DrawDirectionalLines(ballPosition, GameObject.Find("Arrows").transform.rotation);
+        //arrowsBehavior.DrawDirectionalLines(ballPosition, rigRotation);
         reaimingActive = true;
     }
 
@@ -89,9 +95,9 @@ public class ReaimingBehavior : MonoBehaviour {
     {
         roomCamera.transform.position = collision.transform.position;
         //camera must face the direction the object is looking in
-        roomCamera.transform.LookAt(ballPosition + ballVelocity);
+        roomCamera.transform.LookAt(ballPosition + collision.contacts[0].normal * -1f);
 
-        originalRotation = Quaternion.LookRotation(ballVelocity, Vector3.up);
+        startingRotation = Quaternion.LookRotation(ballVelocity, Vector3.up);
         Debug.DrawRay(ballPosition, ballVelocity * 3f, Color.red, 60f);
 
     }
@@ -133,10 +139,10 @@ public class ReaimingBehavior : MonoBehaviour {
         rotAverageY = ClampAngle(rotAverageY, minimumY, maximumY);
         rotAverageX = ClampAngle(rotAverageX, minimumX, maximumX);
 
-        Quaternion yQuaternion = Quaternion.AngleAxis(rotAverageY, Vector3.forward);
-        Quaternion xQuaternion = Quaternion.AngleAxis(rotAverageX, Vector3.up);
+        Quaternion yQuaternion = Quaternion.AngleAxis(rotAverageY, Vector3.left);
+        Quaternion xQuaternion = Quaternion.AngleAxis(rotAverageX, Vector3.up);//Vector3.up);
 
-        roomCamera.gameObject.transform.localRotation = originalRotation * xQuaternion * yQuaternion;
+        roomCamera.transform.localRotation = rigRotation * xQuaternion * yQuaternion;
         arrowsBehavior.AlignArrowsForAiming(
             this.transform.position,
             roomCamera.gameObject.transform.localRotation * Quaternion.AngleAxis(90f, Vector3.right));
