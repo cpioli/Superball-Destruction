@@ -30,12 +30,10 @@ public class ReaimingBehavior : MonoBehaviour {
     public float frameCounter = 20;
 
     static Quaternion startingRotation;
-    static Quaternion rigRotation;
 
     private bool reaimingActive;
     private float timeRemaining; //time left until the 
     private Vector3 ballPosition, ballVelocity;
-    private GameObject roomCameraRig; //
     private GameObject roomCamera; 
     private Rigidbody superballRBody;
     private SuperballBehavior sbBehavior;
@@ -49,8 +47,6 @@ public class ReaimingBehavior : MonoBehaviour {
         reaimingActive = false;
         timeRemaining = 0f;
         ballPosition = Vector3.zero;
-        roomCameraRig = GameObject.Find("RoomCameraRig");
-        rigRotation = roomCameraRig.transform.localRotation;
         roomCamera = GameObject.Find("RoomCamera");
         sbBehavior = GameObject.Find("Sphere").GetComponent<SuperballBehavior>();
         superballRBody = GameObject.Find("Sphere").GetComponent<Rigidbody>();
@@ -72,13 +68,13 @@ public class ReaimingBehavior : MonoBehaviour {
         print(collision.gameObject.name); //"Sphere"
 
         ballPosition = collision.gameObject.transform.position;
-        //Debug.DrawRay(ballPosition, collision.contacts[0].normal * 1.05f, Color.cyan, 480f);
+        Debug.DrawRay(ballPosition, collision.contacts[0].normal * -5f, Color.cyan, 480f);
         
         ballVelocity = collision.gameObject.GetComponent<Rigidbody>().velocity;
         HaltSuperballMovement();
         PositionAndOrientCamera(collision);
         arrowsBehavior.AlignArrowsForAiming(ballPosition, startingRotation * Quaternion.AngleAxis(90, Vector3.right));
-        arrowsBehavior.DrawDirectionalLines(ballPosition, GameObject.Find("Arrows").transform.rotation);
+        //arrowsBehavior.DrawDirectionalLines(ballPosition, GameObject.Find("Arrows").transform.rotation);
         //arrowsBehavior.DrawDirectionalLines(ballPosition, rigRotation);
         reaimingActive = true;
     }
@@ -94,11 +90,13 @@ public class ReaimingBehavior : MonoBehaviour {
     private void PositionAndOrientCamera(Collision collision)
     {
         roomCamera.transform.position = collision.transform.position;
-        //camera must face the direction the object is looking in
-        roomCamera.transform.LookAt(ballPosition + collision.contacts[0].normal * -1f);
+        //camera must face towards the normal of the surface this script is attached to
+        roomCamera.transform.localRotation = Quaternion.LookRotation(collision.contacts[0].normal * -2f);
+        Debug.DrawRay(roomCamera.transform.position, roomCamera.transform.forward * 4f, Color.magenta, 480f);
 
-        startingRotation = Quaternion.LookRotation(ballVelocity, Vector3.up);
+        startingRotation = roomCamera.transform.rotation;
         Debug.DrawRay(ballPosition, ballVelocity * 3f, Color.red, 60f);
+        arrowsBehavior.DrawDirectionalLines(roomCamera.transform.position, roomCamera.transform.rotation);
 
     }
 
@@ -142,7 +140,7 @@ public class ReaimingBehavior : MonoBehaviour {
         Quaternion yQuaternion = Quaternion.AngleAxis(rotAverageY, Vector3.left);
         Quaternion xQuaternion = Quaternion.AngleAxis(rotAverageX, Vector3.up);//Vector3.up);
 
-        roomCamera.transform.localRotation = rigRotation * xQuaternion * yQuaternion;
+        roomCamera.transform.localRotation = startingRotation * xQuaternion * yQuaternion;
         arrowsBehavior.AlignArrowsForAiming(
             this.transform.position,
             roomCamera.gameObject.transform.localRotation * Quaternion.AngleAxis(90f, Vector3.right));
