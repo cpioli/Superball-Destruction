@@ -89,7 +89,7 @@ public class ReaimingBehavior : MonoBehaviour {
 
     private void PositionAndOrientCamera(Collision collision)
     {
-        roomCamera.transform.position = collision.transform.position;
+        roomCamera.transform.position = collision.transform.position + new Vector3(0f, 0.05f, 0f);
         //camera must face towards the normal of the surface this script is attached to
         roomCamera.transform.localRotation = Quaternion.LookRotation(collision.contacts[0].normal * -2f);
         Debug.DrawRay(roomCamera.transform.position, roomCamera.transform.forward * 4f, Color.magenta, 480f);
@@ -142,7 +142,7 @@ public class ReaimingBehavior : MonoBehaviour {
 
         roomCamera.transform.localRotation = startingRotation * xQuaternion * yQuaternion;
         arrowsBehavior.AlignArrowsForAiming(
-            this.transform.position,
+            ballPosition,
             roomCamera.gameObject.transform.localRotation * Quaternion.AngleAxis(90f, Vector3.right));
     }
 
