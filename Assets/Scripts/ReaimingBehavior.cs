@@ -12,8 +12,8 @@ public class ReaimingBehavior : MonoBehaviour {
     public float sensitivityX = 15F;
     public float sensitivityY = 15F;
 
-    float minimumX = -180f;
-    float maximumX = 180f;
+    float minimumX = -90f;
+    float maximumX = 90f;
 
     float minimumY = -60F;
     float maximumY = 60F;
@@ -57,6 +57,10 @@ public class ReaimingBehavior : MonoBehaviour {
 	void Update () {
         if (reaimingActive)
             UpdateAiming();
+        if(Input.GetKey(KeyCode.Space) && reaimingActive)
+        {
+            LaunchBall();
+        }
 	}
 
     //TODO: 3) orient the camera pointing to the plate's normal
@@ -74,14 +78,12 @@ public class ReaimingBehavior : MonoBehaviour {
         HaltSuperballMovement();
         PositionAndOrientCamera(collision);
         arrowsBehavior.AlignArrowsForAiming(ballPosition, startingRotation * Quaternion.AngleAxis(90, Vector3.right));
-        //arrowsBehavior.DrawDirectionalLines(ballPosition, GameObject.Find("Arrows").transform.rotation);
-        //arrowsBehavior.DrawDirectionalLines(ballPosition, rigRotation);
         reaimingActive = true;
     }
 
     private void HaltSuperballMovement()
     {
-        sbBehavior.ballState = SuperballBehavior.SuperBallState.DEAD;
+        sbBehavior.ballState = SuperballBehavior.SuperBallState.REAIMING;
         superballRBody.velocity = Vector3.zero;
         superballRBody.angularVelocity = Vector3.zero;
         superballRBody.useGravity = false;
@@ -144,6 +146,14 @@ public class ReaimingBehavior : MonoBehaviour {
         arrowsBehavior.AlignArrowsForAiming(
             ballPosition,
             roomCamera.gameObject.transform.localRotation * Quaternion.AngleAxis(90f, Vector3.right));
+    }
+
+    private void LaunchBall()
+    {
+        sbBehavior.ballState = SuperballBehavior.SuperBallState.LIVE;
+        print("Adding force!");
+        superballRBody.AddForce(
+            roomCamera.transform.forward.normalized * ballVelocity.magnitude, ForceMode.Impulse);
     }
 
     public static float ClampAngle(float angle, float min, float max)
