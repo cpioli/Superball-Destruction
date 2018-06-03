@@ -33,7 +33,8 @@ public class ReaimingBehavior : MonoBehaviour {
 
     private bool reaimingActive;
     private float timeRemaining; //time left until the 
-    private Vector3 ballPosition, ballVelocity;
+    private Vector3 ballPosition, ballVelocity, origRoomCamPos;
+    private Quaternion origRoomCamAngle;
     private GameObject roomCamera; 
     private Rigidbody superballRBody;
     private SuperballBehavior sbBehavior;
@@ -91,6 +92,8 @@ public class ReaimingBehavior : MonoBehaviour {
 
     private void PositionAndOrientCamera(Collision collision)
     {
+        origRoomCamPos = roomCamera.transform.position;
+        origRoomCamAngle = roomCamera.transform.localRotation;
         roomCamera.transform.position = collision.transform.position + new Vector3(0f, 0.05f, 0f);
         //camera must face towards the normal of the surface this script is attached to
         roomCamera.transform.localRotation = Quaternion.LookRotation(collision.contacts[0].normal * -2f);
@@ -154,6 +157,9 @@ public class ReaimingBehavior : MonoBehaviour {
         print("Adding force!");
         superballRBody.AddForce(
             roomCamera.transform.forward.normalized * ballVelocity.magnitude, ForceMode.Impulse);
+        roomCamera.transform.position = origRoomCamPos;
+        roomCamera.transform.localRotation = origRoomCamAngle;
+        reaimingActive = false;
     }
 
     public static float ClampAngle(float angle, float min, float max)
