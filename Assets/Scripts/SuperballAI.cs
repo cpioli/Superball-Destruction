@@ -7,42 +7,46 @@ public class SuperballAI : MonoBehaviour {
     public float fieldOfView;
     public float maxMoveInDegrees;
     private float radius;
-    private Vector3 location, direction, newDirection;
+    private Vector3 location, newDirection;
     private Collider[] colliders;
     private RaycastHit hitInfo;
     private SphereCollider sphereCollider;
-    private SuperballAIData newGoal;
+    private SuperballAIData superballAIData;
 
     private void Awake()
     {
         sphereCollider = GetComponent<SphereCollider>();
         radius = sphereCollider.radius * sphereCollider.transform.localScale.x;
-
     }
 
-    void OnCollisionExit(Collision collision)
+    void OnCollisionEnter(Collision collision)
     {
-        location = transform.position;
-        direction = GameObject.Find("Sphere").GetComponent<Rigidbody>().velocity;
-        FindNearestBreakableObject(out newGoal);
-        newGoal.newDirection = (newGoal.newCollisionPos - location) * direction.magnitude;
-        SuperballAdjustment(newGoal);
-
-        //}
 //#if UNITY_EDITOR
 //        UnityEditor.EditorApplication.isPaused = true;
 //#endif
     }
 
-    private void FindNearestBreakableObject(out SuperballAIData redirection)
+    void OnCollisionExit(Collision collision)
     {
-        redirection.newCollisionPos = Vector3.zero;
-        redirection.degrees = float.MaxValue;
-        redirection.oldDirection = GetComponent<Rigidbody>().velocity;
-        redirection.newDirection = Vector3.zero;
+        location = transform.position;
+        superballAIData.physicsDirection = GetComponent<Rigidbody>().velocity;
+        FindNearestBreakableObject();
+        superballAIData.newDirection = (superballAIData.newCollisionPos - location) *superballAIData.physicsDirection.magnitude;
+        SuperballAdjustment();
 
-        Vector3 currentColliderBestPos;
+//#if UNITY_EDITOR
+//        UnityEditor.EditorApplication.isPaused = true;
+//#endif
+    }
+
+    private void FindNearestBreakableObject()
+    {
+        superballAIData.newCollisionPos = Vector3.zero;
+        superballAIData.degrees = float.MaxValue;
+        superballAIData.newDirection = Vector3.zero;
+
         float currentCollidersAngle;
+        Vector3 currentColliderBestPos;
         Collider colliderWithSmallestAngle = null;
         //1. collect all objects in range and in the collision layer
         colliders = Physics.OverlapSphere(location, 4f, 1 << 8);
@@ -56,12 +60,12 @@ public class SuperballAI : MonoBehaviour {
             Physics.SphereCast(location, radius, currentColliderBestPos - location, out hitInfo, 1 << 8);
             if (hitInfo.collider != colliders[i]) { continue; }
 
-            currentCollidersAngle = Vector3.Angle(direction, currentColliderBestPos - location);
-            if (currentCollidersAngle < redirection.degrees)
+            currentCollidersAngle = Vector3.Angle(superballAIData.physicsDirection, currentColliderBestPos - location);
+            if (currentCollidersAngle < superballAIData.degrees)
             {
                 colliderWithSmallestAngle = colliders[i];
-                redirection.degrees = currentCollidersAngle;
-                redirection.newCollisionPos = currentColliderBestPos;
+                superballAIData.degrees = currentCollidersAngle;
+                superballAIData.newCollisionPos = currentColliderBestPos;
             }
         }
         if (colliderWithSmallestAngle != null)
@@ -69,33 +73,37 @@ public class SuperballAI : MonoBehaviour {
             Debug.DrawLine(location, colliderWithSmallestAngle.transform.position, Color.black, 480f);
         }
 
-        redirection.newCollisionPos = colliderWithSmallestAngle.transform.position;
+        superballAIData.newCollisionPos = colliderWithSmallestAngle.transform.position;
 
     }
 
-    //rotate by maxMoveInDegrees from oldDirection to newDirection
-    private void SuperballAdjustment(SuperballAIData superballAIData)
+    //rotate by maxMoveInDegrees from physicsDirection to newDirection
+    private void SuperballAdjustment()
     {
-        
-        if(superballAIData.degrees <= maxMoveInDegrees)
+        Vector3 newVelocity = Vector3.zero;
+        Vector3 upVector = Vector3.Cross(superballAIData.physicsDirection, superballAIData.newDirection);
+        if (upVector.y < 0f)
         {
-            this.GetComponent<Rigidbody>().velocity = superballAIData.newDirection;
+             upVector *= -1f;
+        }
+
+        Quaternion from = Quaternion.LookRotation(superballAIData.physicsDirection, upVector);
+        Quaternion to = Quaternion.LookRotation(superballAIData.newDirection, upVector);
+        if (superballAIData.degrees <= maxMoveInDegrees)
+        {
+            newVelocity = Quaternion.RotateTowards(from, to, superballAIData.degrees) * Vector3.forward;
         }
         else
         {
-            Vector3 upVector = Vector3.Cross(superballAIData.oldDirection, superballAIData.newDirection);
-            if (upVector.y < 0f)
-            {
-                upVector *= -1f;
-            }
-
-            Quaternion from = Quaternion.LookRotation(superballAIData.oldDirection, upVector);
-            Quaternion to = Quaternion.LookRotation(superballAIData.newDirection, upVector);
-            Vector3 newVelocity = Quaternion.RotateTowards(from, to, maxMoveInDegrees) * Vector3.forward;
-            this.GetComponent<Rigidbody>().velocity = newVelocity.normalized * superballAIData.oldDirection.magnitude;
+            newVelocity = Quaternion.RotateTowards(from, to, maxMoveInDegrees) * Vector3.forward;
         }
+        this.GetComponent<Rigidbody>().velocity = newVelocity.normalized * superballAIData.physicsDirection.magnitude;
 
-        Debug.DrawLine(transform.position, transform.position + superballAIData.oldDirection, Color.yellow, 480f);
+        print("oldVelocity: " + superballAIData.physicsDirection.magnitude 
+            + " * " + superballAIData.physicsDirection.normalized + " = " + superballAIData.physicsDirection);
+        print("newVelocity: " + GetComponent<Rigidbody>().velocity.magnitude 
+            + " * " + GetComponent<Rigidbody>().velocity.normalized + " = " + GetComponent<Rigidbody>().velocity);
+        Debug.DrawLine(transform.position, transform.position + superballAIData.physicsDirection, Color.yellow, 480f);
         Debug.DrawLine(transform.position, superballAIData.newCollisionPos, Color.red, 480f);
         Debug.DrawLine(transform.position, transform.position + this.GetComponent<Rigidbody>().velocity, Color.green, 480f);
     }
@@ -104,14 +112,14 @@ public class SuperballAI : MonoBehaviour {
     {
         public float degrees;
         public Vector3 newCollisionPos;
-        public Vector3 oldDirection;
+        public Vector3 physicsDirection;
         public Vector3 newDirection;
 
-        public SuperballAIData(float _degrees, Vector3 _newCollisionPos, Vector3 _oldDirection, Vector3 _newDirection)
+        public SuperballAIData(float _degrees, Vector3 _newCollisionPos, Vector3 _physicsDirection, Vector3 _newDirection)
         {
             degrees = _degrees;
             newCollisionPos = _newCollisionPos;
-            oldDirection = _oldDirection;
+            physicsDirection = _physicsDirection;
             newDirection = _newDirection;
         }
     }
