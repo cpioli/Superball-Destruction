@@ -17,6 +17,7 @@ public class SuperballAI : MonoBehaviour {
     {
         sphereCollider = GetComponent<SphereCollider>();
         radius = sphereCollider.radius * sphereCollider.transform.localScale.x;
+        Time.timeScale = 0.5f;
     }
 
     void OnCollisionEnter(Collision collision)
@@ -34,9 +35,9 @@ public class SuperballAI : MonoBehaviour {
         superballAIData.newDirection = (superballAIData.newCollisionPos - location) *superballAIData.physicsDirection.magnitude;
         SuperballAdjustment();
 
-//#if UNITY_EDITOR
-//        UnityEditor.EditorApplication.isPaused = true;
-//#endif
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPaused = true;
+#endif
     }
 
     private void FindNearestBreakableObject()
