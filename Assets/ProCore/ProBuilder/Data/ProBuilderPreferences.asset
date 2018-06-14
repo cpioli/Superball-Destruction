@@ -14,24 +14,29 @@ MonoBehaviour:
   m_Bool_keys:
   - pbIconGUI
   - pbUVMaterialPreview
+  - pbDefaultOpenInDockableWindow
   m_Int_keys:
   - pbDefaultEditLevel
   - pbDefaultSelectionMode
   - pb_GIWorkflowMode
   - pbHandleAlignment
+  - pbEdgeSubdivisions
+  - pbDragSelectMode
   m_Float_keys:
   - pbEditorScroll.x
   - pbEditorScroll.y
   m_String_keys:
   - pbCurrentMaterialPalette
+  - pbVertexColorPrefs7
   m_Color_keys: []
   m_Material_keys: []
-  m_Bool_values: 0101
-  m_Int_values: 01000000000000000100000000000000
+  m_Bool_values: 000101
+  m_Int_values: 000000000000000001000000000000000100000002000000
   m_Float_values:
   - 0
-  - 0
+  - 111
   m_String_values:
   - Assets/ProCore/ProBuilder/Data/Material Palette.asset
+  - RGBA(0.669, 0.427, 0.271, 1.000)
   m_Color_values: []
   m_Material_values: []
