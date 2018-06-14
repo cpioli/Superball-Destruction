@@ -137,7 +137,7 @@ public class CannonBehavior : MonoBehaviour {
 
         transform.localRotation = originalRotation * xQuaternion * yQuaternion;
         arrowsBehavior.AlignArrowsForAiming(
-            this.transform.position, 
+            sphereCollider.transform.position, 
             CannonBarrel.transform.rotation);
 
     }
