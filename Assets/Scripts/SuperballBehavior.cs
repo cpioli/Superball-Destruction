@@ -106,7 +106,7 @@ public class SuperballBehavior : MonoBehaviour
 
         //The line representing the velocity of our ball
         Vector3 origin = GameObject.Find("Sphere").transform.position;
-        Debug.DrawLine(origin, origin + newDirection, Color.white, 480f);
+        //Debug.DrawLine(origin, origin + newDirection, Color.white, 480f);
 
         Ray ray = new Ray(lastCollisionLocation, this.GetComponent<Rigidbody>().velocity.normalized);
         RaycastHit hitInfo;
@@ -132,9 +132,9 @@ public class SuperballBehavior : MonoBehaviour
         CheckSuperballVelocity(this.GetComponent<Rigidbody>().velocity);
 
         Vector3 upVector = ConeCast.transform.forward;
-        Debug.DrawLine(origin, origin + upVector * 100f, Color.grey, 480f);
+        //Debug.DrawLine(origin, origin + upVector * 100f, Color.grey, 480f);
         ConeCast.transform.LookAt(newDirection + origin);
-        Debug.DrawLine(transform.position, nextCollisionLocation, Color.magenta);
+        //Debug.DrawLine(transform.position, nextCollisionLocation, Color.magenta);
     }
 
     private void HandleBreakableObjectCollision()

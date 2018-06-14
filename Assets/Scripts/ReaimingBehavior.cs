@@ -73,7 +73,7 @@ public class ReaimingBehavior : MonoBehaviour {
         print(collision.gameObject.name); //"Sphere"
 
         ballPosition = collision.gameObject.transform.position;
-        Debug.DrawRay(ballPosition, collision.contacts[0].normal * -5f, Color.cyan, 480f);
+        //Debug.DrawRay(ballPosition, collision.contacts[0].normal * -5f, Color.cyan, 480f);
         
         ballVelocity = collision.gameObject.GetComponent<Rigidbody>().velocity;
         HaltSuperballMovement();
@@ -84,7 +84,6 @@ public class ReaimingBehavior : MonoBehaviour {
 
     private void HaltSuperballMovement()
     {
-        sbBehavior.ballState = SuperballBehavior.SuperBallState.REAIMING;
         superballRBody.velocity = Vector3.zero;
         superballRBody.angularVelocity = Vector3.zero;
         superballRBody.useGravity = false;
