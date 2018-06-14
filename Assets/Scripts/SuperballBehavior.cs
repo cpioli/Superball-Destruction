@@ -15,7 +15,6 @@ public class SuperballBehavior : MonoBehaviour
     public float velocity = 1.0f;
     public float maxSpeed = 22.352f; //meters per second (50mph)
     public Vector3 forward = new Vector3(1f, 0f, 1f);
-    public Collider ConeCast;
 
     private bool hitBreakableObject;
     private int collisionLayer = 1 << 8;
@@ -130,11 +129,6 @@ public class SuperballBehavior : MonoBehaviour
         }
 
         CheckSuperballVelocity(this.GetComponent<Rigidbody>().velocity);
-
-        Vector3 upVector = ConeCast.transform.forward;
-        //Debug.DrawLine(origin, origin + upVector * 100f, Color.grey, 480f);
-        ConeCast.transform.LookAt(newDirection + origin);
-        //Debug.DrawLine(transform.position, nextCollisionLocation, Color.magenta);
     }
 
     private void HandleBreakableObjectCollision()
