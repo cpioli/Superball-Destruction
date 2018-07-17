@@ -26,6 +26,7 @@ GameObject:
   - component: {fileID: 65333252718795328}
   - component: {fileID: 54215083560877678}
   - component: {fileID: 114778314209658968}
+  - component: {fileID: 114010900157555328}
   m_Layer: 8
   m_Name: WideServingPlate
   m_TagString: Untagged
@@ -40,7 +41,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1026184537049924}
   m_LocalRotation: {x: -0, y: -1, z: -0, w: 0}
-  m_LocalPosition: {x: 4.33, y: -1.5, z: -12.95}
+  m_LocalPosition: {x: 5.12, y: -1.5, z: -12.95}
   m_LocalScale: {x: 1, y: 1.17, z: 2.27}
   m_Children: []
   m_Father: {fileID: 0}
@@ -59,6 +60,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: 55296d1b6ee54e14e8eb4648d4b448ee, type: 2}
   m_StaticBatchInfo:
@@ -114,6 +116,24 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.020295858, y: 0.33000016, z: 0.33202624}
   m_Center: {x: 1.7398521, y: 2.4948387, z: -4.1439867}
+--- !u!114 &114010900157555328
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1026184537049924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f3a00b5d58d14940ae36621b789e7ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  translationSpeed: 0.025
+  shift: 80
+  rotationSpeed: 0.5
+  sensitivityX: 15
+  sensitivityY: 15
+  frameCounter: 20
+  timeUntilLaunch: 0
 --- !u!114 &114066880934191352
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -857,17 +877,9 @@ MonoBehaviour:
     areaError: 15
   asset_guid: 
   dontDestroyMeshOnDelete: 0
-  m_selectedFaces: 04000000
-  m_SelectedEdges:
-  - x: 16
-    y: 17
-  - x: 18
-    y: 16
-  - x: 17
-    y: 19
-  - x: 19
-    y: 18
-  m_selectedTriangles: 100000001100000012000000110000001300000012000000
+  m_selectedFaces: 
+  m_SelectedEdges: []
+  m_selectedTriangles: 
 --- !u!114 &114778314209658968
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -879,5 +891,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d02f9a3100e8e9a40a8333bc0f0ba7d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHitPoints: 20
-  hardness: 5
