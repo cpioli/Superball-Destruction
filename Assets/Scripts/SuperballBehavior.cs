@@ -9,6 +9,7 @@ public class SuperballBehavior : MonoBehaviour
     {
         ATREST,
         LIVE,
+        REAIMING,
         DEAD
     }
     public SuperBallState ballState;
@@ -99,7 +100,6 @@ public class SuperballBehavior : MonoBehaviour
         Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.yellow, 480f);
 
         lastCollisionLocation = this.transform.position;
-        print(this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude);
 
         Vector3 newDirection = GetComponent<Rigidbody>().velocity;
 
@@ -114,7 +114,7 @@ public class SuperballBehavior : MonoBehaviour
             nextCollisionLocation = hitInfo.point;
             nextCollisionObject = hitInfo.collider.gameObject;
         }
-        else
+        else //Physics.Raycast returns "false"
         {
             Debug.Log("Error calculating next collision!");
         }
@@ -128,19 +128,22 @@ public class SuperballBehavior : MonoBehaviour
             HandleUnbreakableObjectCollision();
         }
 
-        CheckSuperballVelocity(this.GetComponent<Rigidbody>().velocity);
+        //CheckSuperballVelocity(this.GetComponent<Rigidbody>().velocity);
     }
 
     private void HandleBreakableObjectCollision()
     {
-        Debug.Log("Handling BREAKABLE Object collision!");
-        this.IncrementVelocityFixed(0.05f);
+        
+
+        this.IncrementVelocityFixed(0.1f);
+        Debug.Log("BREAKABLE Object!" + this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude);
     }
 
     private void HandleUnbreakableObjectCollision()
     {
-        Debug.Log("Handling a SOLID Object collision!");
-        this.DecrementVelocityFixed(-0.1f);
+        this.IncrementVelocityFixed(-0.1f);
+        Debug.Log("SOLID Object!" + this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude);
+
     }
 
     //NOTE: dampening the speed means the velocity must move to 0.0f
@@ -148,28 +151,7 @@ public class SuperballBehavior : MonoBehaviour
     //      could be positive or negative. So I have to keep track of that.
     private void IncrementVelocityFixed(float fixedAmount)
     {
-        float increment = Mathf.Abs(fixedAmount);
-        float sumOfComponents = Mathf.Abs(rBody.velocity.x) + Mathf.Abs(rBody.velocity.y) + Mathf.Abs(rBody.velocity.z);
-        float xIncrement = rBody.velocity.x / sumOfComponents * increment;
-        float yIncrement = rBody.velocity.y / sumOfComponents * increment;
-        float zIncrement = rBody.velocity.z / sumOfComponents * increment;
-
-        rBody.velocity = new Vector3(rBody.velocity.x + xIncrement,
-                                 rBody.velocity.y + yIncrement,
-                                 rBody.velocity.z + zIncrement);
-    }
-
-    private void DecrementVelocityFixed(float fixedAmount)
-    {
-        float increment = Mathf.Abs(fixedAmount);
-        float sumOfComponents = Mathf.Abs(rBody.velocity.x) + Mathf.Abs(rBody.velocity.y) + Mathf.Abs(rBody.velocity.z);
-        float xIncrement = rBody.velocity.x / sumOfComponents * increment;
-        float yIncrement = rBody.velocity.y / sumOfComponents * increment;
-        float zIncrement = rBody.velocity.z / sumOfComponents * increment;
-
-        rBody.velocity = new Vector3(rBody.velocity.x - xIncrement,
-                                 rBody.velocity.y - yIncrement,
-                                 rBody.velocity.z - zIncrement);
+        rBody.velocity = rBody.velocity.normalized * (rBody.velocity.magnitude + fixedAmount);
     }
 
     /*

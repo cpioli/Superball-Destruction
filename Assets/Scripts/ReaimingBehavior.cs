@@ -80,6 +80,7 @@ public class ReaimingBehavior : MonoBehaviour {
         PositionAndOrientCamera(collision);
         arrowsBehavior.AlignArrowsForAiming(ballPosition, startingRotation * Quaternion.AngleAxis(90, Vector3.right));
         reaimingActive = true;
+        sbBehavior.ballState = SuperballBehavior.SuperBallState.REAIMING;
     }
 
     private void HaltSuperballMovement()
@@ -159,6 +160,7 @@ public class ReaimingBehavior : MonoBehaviour {
         roomCamera.transform.position = origRoomCamPos;
         roomCamera.transform.localRotation = origRoomCamAngle;
         reaimingActive = false;
+        sbBehavior.ballState = SuperballBehavior.SuperBallState.LIVE;
     }
 
     public static float ClampAngle(float angle, float min, float max)
