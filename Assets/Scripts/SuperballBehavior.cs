@@ -22,8 +22,11 @@ public class SuperballBehavior : MonoBehaviour
     private int xZeroVelocityCount, yZeroVelocityCount, zZeroVelocityCount;
     private float maxObjectDeviation = 20f; //in degrees
     private Vector3 lastCollisionLocation, nextCollisionLocation, currentDirection;
+    private float previousMagnitude;
     private GameObject nextCollisionObject, CannonBarrel;
     private Rigidbody rBody;
+
+    private float[] fibonacciIncrement = { 0.1f, 0.1f, 0.2f, 0.3f, 0.5f, 0.8f, 1.3f };
 
     // Use this for initialization
     void Start()
@@ -97,6 +100,13 @@ public class SuperballBehavior : MonoBehaviour
         if (ballState != SuperBallState.LIVE)
             return;
 
+        if (Mathf.Abs(previousMagnitude - rBody.velocity.magnitude) > 0.2f)
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPaused = true;
+#endif
+        }
+        previousMagnitude = rBody.velocity.magnitude;
         Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.yellow, 480f);
 
         lastCollisionLocation = this.transform.position;
@@ -128,21 +138,30 @@ public class SuperballBehavior : MonoBehaviour
             HandleUnbreakableObjectCollision();
         }
 
+        if(Mathf.Abs(previousMagnitude - rBody.velocity.magnitude) > 0.2f)
+            {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPaused = true;
+#endif
+        }
         //CheckSuperballVelocity(this.GetComponent<Rigidbody>().velocity);
+        previousMagnitude = rBody.velocity.magnitude;
     }
 
     private void HandleBreakableObjectCollision()
     {
-        
 
+        Debug.Log("BREAKABLE Object! At Position " + lastCollisionLocation + "\n" + this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude + " vector: " + GetComponent<Rigidbody>().velocity.ToString());
         this.IncrementVelocityFixed(0.1f);
-        Debug.Log("BREAKABLE Object!" + this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude);
+        Debug.Log("New adjusted stats: " + this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude + " vector: " + GetComponent<Rigidbody>().velocity.ToString()); ;
     }
 
     private void HandleUnbreakableObjectCollision()
     {
+        Debug.Log("SOLID Object! At Position " + lastCollisionLocation + "\n" + this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude + " vector: " + GetComponent<Rigidbody>().velocity.ToString());
         this.IncrementVelocityFixed(-0.1f);
-        Debug.Log("SOLID Object!" + this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude);
+        Debug.Log("New adjusted stats: " + this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude + " vector: " + GetComponent<Rigidbody>().velocity.ToString());
+
 
     }
 
