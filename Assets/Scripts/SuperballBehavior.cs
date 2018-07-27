@@ -16,6 +16,7 @@ public class SuperballBehavior : MonoBehaviour
     public SuperBallState ballState;
     public float velocity = 1.0f;
     public float maxSpeed = 22.352f; //meters per second (50mph)
+    public float velocityThreshold; //if velocity.magnitude < velocityThreshold, gravity is on
     //0.44704 meters per second = 1 mile per hour
     public Vector3 forward = new Vector3(1f, 0f, 1f);
 
@@ -31,6 +32,8 @@ public class SuperballBehavior : MonoBehaviour
     private bool isLastObjectBreakable, isCurrentObjectBreakable; //tracks if we increment or reduce fibonacci
     private float[] fibonacciIncrement = { 0.1f, 0.1f, 0.2f, 0.3f, 0.5f, 0.8f, 1.3f };
     private int currentFibonacci;
+
+    private bool liveStateOverridesFallingCheck;
 
     // Use this for initialization
     void Start()
@@ -49,6 +52,7 @@ public class SuperballBehavior : MonoBehaviour
         currentFibonacci = 0;
         isLastObjectBreakable = true;
         isCurrentObjectBreakable = true;
+        liveStateOverridesFallingCheck = false;
     }
 
     // Update is called once per frame
@@ -61,6 +65,10 @@ public class SuperballBehavior : MonoBehaviour
                 break;
 
             case SuperBallState.LIVE:
+                break;
+
+            case SuperBallState.FALLING:
+                //TODO: run a check for DEAD state to trigger
                 break;
 
             case SuperBallState.DEAD:
@@ -93,7 +101,7 @@ public class SuperballBehavior : MonoBehaviour
     //USe this method to track issues you might have with collisions
     void OnCollisionEnter(Collision other)
     {
-        if (ballState != SuperBallState.LIVE)
+        if (ballState != SuperBallState.LIVE && ballState != SuperBallState.FALLING)
             return;
         Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.yellow, 480f);
         
@@ -103,7 +111,7 @@ public class SuperballBehavior : MonoBehaviour
 
     void OnCollisionExit(Collision other)
     {
-        if (ballState != SuperBallState.LIVE)
+        if (ballState != SuperBallState.LIVE && ballState != SuperBallState.FALLING)
             return;
 
         CheckForVelocityDampening();
@@ -143,11 +151,17 @@ public class SuperballBehavior : MonoBehaviour
         if (isCurrentObjectBreakable)
             HandleBreakableObjectCollision(fibonacciIncrement[currentFibonacci], other);
         else
-            HandleUnbreakableObjectCollision(fibonacciIncrement[currentFibonacci], other);
+            HandleUnbreakableObjectCollision(-fibonacciIncrement[currentFibonacci], other);
 
         CheckForVelocityDampening();
 
         //next update: when speed is less than x meters-per-second turn on gravity
+        if(rBody.velocity.magnitude < velocityThreshold && !liveStateOverridesFallingCheck)
+        {
+            Debug.Log("Now entering the FALLEN state: " + rBody.velocity.magnitude);
+            ballState = SuperBallState.FALLING;
+            rBody.useGravity = true;
+        }
     }
 
     private void HandleBreakableObjectCollision(float increment, Collision collision)
@@ -160,9 +174,19 @@ public class SuperballBehavior : MonoBehaviour
 
         this.IncrementVelocityFixed(increment);
 
-        Debug.Log("New adjusted stats: " + this.name + "'s speed: " + 
+        /*Debug.Log("New adjusted stats: " + this.name + "'s speed: " + 
             this.GetComponent<Rigidbody>().velocity.magnitude + " vector: " +
-            GetComponent<Rigidbody>().velocity.ToString());
+            GetComponent<Rigidbody>().velocity.ToString());*/
+
+        if(ballState == SuperBallState.FALLING)
+        {
+            ballState = SuperBallState.LIVE;
+            rBody.useGravity = false;
+            Debug.Log("Exiting FALLEN state, reentering LIVE state!");
+            liveStateOverridesFallingCheck = true;
+            //the velocity might be < velocityThreshold and the state could reset to FALLING
+            //this boolean allows us to override that.
+        }
     }
 
     private void HandleUnbreakableObjectCollision(float decrement, Collision collision)
@@ -174,11 +198,16 @@ public class SuperballBehavior : MonoBehaviour
 
         this.IncrementVelocityFixed(decrement);
 
-        Debug.Log("New adjusted stats: " + this.name + "'s speed: " +
+        /*Debug.Log("New adjusted stats: " + this.name + "'s speed: " +
             this.GetComponent<Rigidbody>().velocity.magnitude + " vector: " +
-            GetComponent<Rigidbody>().velocity.ToString());
+            GetComponent<Rigidbody>().velocity.ToString());*/
 
+        if(ballState == SuperBallState.LIVE && liveStateOverridesFallingCheck)
+        {
+            liveStateOverridesFallingCheck = false; //switch this back off so gravity can reactivate
+            Debug.Log("Killing Falling state override");
 
+        }
     }
 
     //NOTE: dampening the speed means the velocity must move to 0.0f
@@ -204,7 +233,7 @@ public class SuperballBehavior : MonoBehaviour
 
     private void CheckForVelocityDampening()
     {
-        if (Mathf.Abs(previousMagnitude - rBody.velocity.magnitude) > 0.2f)
+        if (Mathf.Abs(previousMagnitude - rBody.velocity.magnitude) > fibonacciIncrement[currentFibonacci] + 0.2f)
         {
 #if UNITY_EDITOR
             Debug.Log("Change in magnitude: " + Mathf.Abs(previousMagnitude -
