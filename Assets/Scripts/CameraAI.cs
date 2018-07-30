@@ -12,7 +12,8 @@ public class CameraAI : MonoBehaviour {
 	
 	// Update is called once per frame
 	void LateUpdate () {
-        if(ball.GetComponent<SuperballBehavior>().ballState == SuperballBehavior.SuperBallState.LIVE)
+        if(ball.GetComponent<SuperballBehavior>().ballState == SuperballBehavior.SuperBallState.LIVE
+            || ball.GetComponent<SuperballBehavior>().ballState == SuperballBehavior.SuperBallState.FALLING)
             transform.LookAt(ball.transform.position);
 	}
 
