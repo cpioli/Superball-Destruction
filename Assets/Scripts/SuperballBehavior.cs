@@ -34,6 +34,11 @@ public class SuperballBehavior : MonoBehaviour
     private int currentFibonacci;
 
     private bool liveStateOverridesFallingCheck;
+    private float accumulatedTime;
+
+    private GameObject emptyGameObject;
+    private GameObject collisionFolder;
+    private int collisionID;
 
     // Use this for initialization
     void Start()
@@ -53,6 +58,14 @@ public class SuperballBehavior : MonoBehaviour
         isLastObjectBreakable = true;
         isCurrentObjectBreakable = true;
         liveStateOverridesFallingCheck = false;
+
+        accumulatedTime = 0f;
+
+        emptyGameObject = GameObject.Find("CollisionPoints");
+        collisionFolder = Instantiate(emptyGameObject, emptyGameObject.transform.position, Quaternion.identity) as GameObject;
+        collisionFolder.name = "CollisionFolder";
+        collisionID = 0;
+
     }
 
     // Update is called once per frame
@@ -69,9 +82,11 @@ public class SuperballBehavior : MonoBehaviour
 
             case SuperBallState.FALLING:
                 //TODO: run a check for DEAD state to trigger
+                XZVelocityDecay();
                 break;
 
             case SuperBallState.DEAD:
+                print("Game over");
                 break;
 
             default:
@@ -97,15 +112,38 @@ public class SuperballBehavior : MonoBehaviour
         lastCollisionLocation = this.transform.position;
     }
 
+    void XZVelocityDecay()
+    {
+        if (Mathf.Abs(rBody.velocity.y) >= 0.1f) return;
+
+        accumulatedTime += Time.deltaTime;
+        print(accumulatedTime);
+        Mathf.Lerp(rBody.velocity.x, 0f, accumulatedTime);
+        Mathf.Lerp(rBody.velocity.z, 0f, accumulatedTime);
+
+        if(accumulatedTime >= 1.0f) //alternatively use if(rBody.velocity.x == 0f) or if(rBody.velocity.z == 0f)
+        {
+            ballState = SuperBallState.DEAD;
+        }
+    }
 
     //USe this method to track issues you might have with collisions
     void OnCollisionEnter(Collision other)
     {
         if (ballState != SuperBallState.LIVE && ballState != SuperBallState.FALLING)
             return;
-        Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.yellow, 480f);
+        Debug.DrawLine(rBody.position, lastCollisionLocation, Color.yellow, 480f);
         
+        for(int i = 0; i < other.contacts.Length; i++)
+        {
+            ContactPoint contactPoint = other.contacts[i];
+            GameObject nextPoint = Instantiate(emptyGameObject, contactPoint.point, Quaternion.identity) as GameObject;
+            nextPoint.name = collisionID.ToString() + "-" + i.ToString();
+            nextPoint.transform.parent = collisionFolder.transform;
+        }
+
         lastCollisionLocation = this.transform.position;
+        collisionID++;
 
     }
 
@@ -117,7 +155,7 @@ public class SuperballBehavior : MonoBehaviour
         CheckForVelocityDampening();
 
         previousMagnitude = rBody.velocity.magnitude;
-        Debug.DrawLine(this.transform.position, lastCollisionLocation, Color.yellow, 480f);
+        Debug.DrawLine(rBody.position, lastCollisionLocation, Color.yellow, 480f);
 
         lastCollisionLocation = this.transform.position;
 
@@ -144,9 +182,8 @@ public class SuperballBehavior : MonoBehaviour
         }
         else
         {
-            currentFibonacci++;
-            if (currentFibonacci > fibonacciIncrement.Length - 1)
-                currentFibonacci = fibonacciIncrement.Length - 1;
+            if (currentFibonacci < fibonacciIncrement.Length - 1)
+                currentFibonacci++;
         }
         if (isCurrentObjectBreakable)
             HandleBreakableObjectCollision(fibonacciIncrement[currentFibonacci], other);
@@ -156,9 +193,9 @@ public class SuperballBehavior : MonoBehaviour
         CheckForVelocityDampening();
 
         //next update: when speed is less than x meters-per-second turn on gravity
-        if(rBody.velocity.magnitude < velocityThreshold && !liveStateOverridesFallingCheck)
+        if(rBody.velocity.magnitude < velocityThreshold && !liveStateOverridesFallingCheck && ballState != SuperBallState.FALLING)
         {
-            Debug.Log("Now entering the FALLEN state: " + rBody.velocity.magnitude);
+            Debug.Log("Now entering the FALLEN state: " + rBody.velocity);
             ballState = SuperBallState.FALLING;
             rBody.useGravity = true;
         }
@@ -167,16 +204,16 @@ public class SuperballBehavior : MonoBehaviour
     private void HandleBreakableObjectCollision(float increment, Collision collision)
     {
 
-        Debug.Log("BREAKABLE Object! At Position " + lastCollisionLocation +
+        Debug.Log((collisionID-1).ToString() + " BREAKABLE Object! At Position " + lastCollisionLocation +
             " Against object " + collision.transform.gameObject.name + "\n" +
             this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude +
             " vector: " + GetComponent<Rigidbody>().velocity.ToString());
 
         this.IncrementVelocityFixed(increment);
 
-        /*Debug.Log("New adjusted stats: " + this.name + "'s speed: " + 
+        Debug.Log("New adjusted stats: " + this.name + "'s speed: " + 
             this.GetComponent<Rigidbody>().velocity.magnitude + " vector: " +
-            GetComponent<Rigidbody>().velocity.ToString());*/
+            GetComponent<Rigidbody>().velocity.ToString());
 
         if(ballState == SuperBallState.FALLING)
         {
@@ -191,16 +228,16 @@ public class SuperballBehavior : MonoBehaviour
 
     private void HandleUnbreakableObjectCollision(float decrement, Collision collision)
     {
-        Debug.Log("SOLID Object! At Position " + lastCollisionLocation +
+        Debug.Log((collisionID - 1).ToString() + " SOLID Object! At Position " + lastCollisionLocation +
             " Against object " + collision.transform.gameObject.name + "\n" +
             this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude +
             " vector: " + GetComponent<Rigidbody>().velocity.ToString());
 
         this.IncrementVelocityFixed(decrement);
 
-        /*Debug.Log("New adjusted stats: " + this.name + "'s speed: " +
+        Debug.Log("New adjusted stats: " + this.name + "'s speed: " +
             this.GetComponent<Rigidbody>().velocity.magnitude + " vector: " +
-            GetComponent<Rigidbody>().velocity.ToString());*/
+            GetComponent<Rigidbody>().velocity.ToString());
 
         if(ballState == SuperBallState.LIVE && liveStateOverridesFallingCheck)
         {
