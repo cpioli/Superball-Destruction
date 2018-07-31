@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class GameManager : MonoBehaviour, IGameEventHandler {
 
@@ -21,9 +22,14 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     public Canvas PointsTally;
     public Canvas HighScores;
 
+    public Camera StartMenuCamera;
+    public Camera CannonCamera;
+    public Camera RoomCamera;
+
     // Use this for initialization
     void Start () {
-        currentGameState = GameState.STARTMENU;
+        GameStart();
+        root.worldCamera = StartMenuCamera;
 	}
 	
     void Awake()
@@ -56,6 +62,7 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     public void GameStart()
     {
         currentGameState = GameState.INPLAY;
+        StartMenu.gameObject.SetActive(true);
     }
 
     //triggered by: keyboard input
