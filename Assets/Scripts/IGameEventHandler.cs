@@ -20,8 +20,10 @@ public interface IGameEventHandler : IEventSystemHandler {
     //game states
     void GameStart();
     void GameIsPaused();
+    void GameIsResumed();
+    void GameQuit();
     void GameIsOver();
     void ReturnToStartMenu();
 
-    void UpdateScore(int addition);
+    void UpdateScore(int addition, bool isBreakable);
 }
