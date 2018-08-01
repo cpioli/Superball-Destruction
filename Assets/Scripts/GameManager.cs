@@ -63,12 +63,12 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     //TODO: turn on music
     public void GameStart()
     {
-        print("We've started the game!");
         currentGameState = GameState.INPLAY;
         StartMenuCamera.GetComponent<Camera>().enabled = false;
         CannonCamera.GetComponent<Camera>().enabled = true;
         root.worldCamera = CannonCamera;
         StartMenu.gameObject.SetActive(false);
+        GameHUD.gameObject.SetActive(true);
         sbBehavior.StartupBallCannon();
     }
 
@@ -76,8 +76,8 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     public void GameIsPaused()
     {
         currentGameState = GameState.PAUSED;
-        StartMenu.gameObject.SetActive(false);
-        PauseMenu.gameObject.SetActive(false);
+        GameHUD.gameObject.SetActive(false);
+        PauseMenu.gameObject.SetActive(true);
     }
 
     //triggered by: button input or keyboard input
