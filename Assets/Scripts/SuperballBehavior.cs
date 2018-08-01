@@ -43,7 +43,7 @@ public class SuperballBehavior : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        ballState = SuperBallState.ATREST;
+        ballState = SuperBallState.DEAD;
         hitBreakableObject = false;
         xZeroVelocityCount = 0;
         yZeroVelocityCount = 0;
@@ -86,12 +86,16 @@ public class SuperballBehavior : MonoBehaviour
                 break;
 
             case SuperBallState.DEAD:
-                print("Game over");
                 break;
 
             default:
                 break;
         }
+    }
+
+    public void StartupBallCannon()
+    {
+        ballState = SuperBallState.ATREST;
     }
 
     void BallAtRest()

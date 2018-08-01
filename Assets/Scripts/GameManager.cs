@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 public class GameManager : MonoBehaviour, IGameEventHandler {
 
-    enum GameState
+    public enum GameState
     {
         STARTMENU,
         INPLAY,
@@ -26,19 +26,21 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     public Camera CannonCamera;
     public Camera RoomCamera;
 
+    private SuperballBehavior sbBehavior;
+
     // Use this for initialization
     void Start () {
-        GameStart();
+        //ExecuteEvents.Execute<IGameEventHandler>(this.gameObject, null, (x, y) => x.GameStart());
+        sbBehavior = GameObject.Find("Sphere").GetComponent<SuperballBehavior>();
         root.worldCamera = StartMenuCamera;
-	}
-	
-    void Awake()
-    {
-
+        currentGameState = GameState.STARTMENU;
+        CannonCamera.GetComponent<Camera>().enabled = false;
+        StartMenuCamera.GetComponent<Camera>().enabled = true;
+        StartMenu.gameObject.SetActive(true);
     }
 
-	// Update is called once per frame
-	void Update () {
+    // Update is called once per frame
+    void Update () {
 		switch(currentGameState)
         {
             case GameState.STARTMENU:
@@ -61,14 +63,21 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     //TODO: turn on music
     public void GameStart()
     {
+        print("We've started the game!");
         currentGameState = GameState.INPLAY;
-        StartMenu.gameObject.SetActive(true);
+        StartMenuCamera.GetComponent<Camera>().enabled = false;
+        CannonCamera.GetComponent<Camera>().enabled = true;
+        root.worldCamera = CannonCamera;
+        StartMenu.gameObject.SetActive(false);
+        sbBehavior.StartupBallCannon();
     }
 
     //triggered by: keyboard input
     public void GameIsPaused()
     {
         currentGameState = GameState.PAUSED;
+        StartMenu.gameObject.SetActive(false);
+        PauseMenu.gameObject.SetActive(false);
     }
 
     //triggered by: button input or keyboard input
@@ -78,6 +87,8 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     public void GameIsResumed()
     {
         currentGameState = GameState.INPLAY;
+        StartMenu.gameObject.SetActive(true);
+        PauseMenu.gameObject.SetActive(true);
     }
 
     //triggered by: button input
@@ -109,5 +120,10 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     public void UpdateScore(int addition, bool isBreakable)
     {
 
+    }
+
+    public GameState GetCurrentGameState()
+    {
+        return currentGameState;
     }
 }

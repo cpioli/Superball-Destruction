@@ -37,7 +37,9 @@ public class CannonBehavior : MonoBehaviour {
     private SphereCollider sphereCollider;
     private RaycastHit hitInfo;
     private SuperballBehavior sbBehavior;
+    private GameManager gameManager;
     private ArrowsBehavior arrowsBehavior;
+    public bool isCannonMovable;
 
     // Use this for initialization
     void Start () {
@@ -50,21 +52,27 @@ public class CannonBehavior : MonoBehaviour {
         sphereCollider = GameObject.Find("Sphere").GetComponent<SphereCollider>();
         originalRotation = transform.localRotation;
         sbBehavior = GameObject.Find("Sphere").GetComponent<SuperballBehavior>();
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         arrowsBehavior = GameObject.Find("Arrows").GetComponent<ArrowsBehavior>();
+        isCannonMovable = false;
     }
 	
 	// Update is called once per frame
 	void Update () {
-        UpdateControls();
-        if(sbBehavior.ballState == SuperballBehavior.SuperBallState.ATREST)
+        if (sbBehavior.ballState == SuperballBehavior.SuperBallState.ATREST)
+        {
+            UpdateControls();
+        }
+        if(sbBehavior.ballState == SuperballBehavior.SuperBallState.ATREST ||
+            sbBehavior.ballState == SuperballBehavior.SuperBallState.REAIMING)
+        {
             UpdateAim();
-	}
+        }
+    }
 
+    //only runs if the ball is in the ATREST state
     void UpdateControls()
     {
-        if (sbBehavior.ballState == SuperballBehavior.SuperBallState.LIVE)
-            return;
-
         float currentSpeed = translationSpeed;
         bool goFaster = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         if (goFaster) currentSpeed += shift;
@@ -97,6 +105,7 @@ public class CannonBehavior : MonoBehaviour {
 
     //https://forum.unity.com/threads/simple-first-person-camera-script.417611/
     //taken from the website above
+    // Works in the REAIMING state and the ATREST state
     void UpdateAim()
     {
         rotAverageY = 0f;
