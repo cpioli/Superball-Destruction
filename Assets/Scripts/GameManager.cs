@@ -27,6 +27,8 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     public Camera RoomCamera;
 
     private SuperballBehavior sbBehavior;
+    private int score;
+    private bool lastObjectWasBreakable;
 
     // Use this for initialization
     void Start () {
@@ -37,6 +39,9 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
         CannonCamera.GetComponent<Camera>().enabled = false;
         StartMenuCamera.GetComponent<Camera>().enabled = true;
         StartMenu.gameObject.SetActive(true);
+
+        score = 0;
+        lastObjectWasBreakable = false;
     }
 
     // Update is called once per frame
@@ -119,7 +124,21 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     //or superball behavior
     public void UpdateScore(int addition, bool isBreakable)
     {
+        string message = "";
+        if(lastObjectWasBreakable && isBreakable)
+        {
+            message += "Rally ";
+        }
+        if(lastObjectWasBreakable && !isBreakable)
+        {
+            message += "Broken ";
+        }
+        lastObjectWasBreakable = isBreakable;
+        message += addition.ToString();
+        ExecuteEvents.Execute<IGameHUDEvent>(GameHUD.gameObject, null, (x, y) => x.AddNewMessage(message));
 
+        score += addition;
+        ExecuteEvents.Execute<IGameHUDEvent>(GameHUD.gameObject, null, (x, y) => x.UpdateScore(score));
     }
 
     public GameState GetCurrentGameState()

@@ -123,7 +123,7 @@ GameObject:
   - component: {fileID: 114219886370758382}
   m_Layer: 0
   m_Name: Main Camera
-  m_TagString: MainCamera
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -521,6 +521,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ballState: 0
+  points: 100
   velocity: 12.06
   maxSpeed: 22.352
   velocityThreshold: 5
@@ -5184,6 +5185,7 @@ MonoBehaviour:
   frameCounter: 20
   RicochetArrows: {fileID: 0}
   CannonBarrel: {fileID: 1423119553815232}
+  isCannonMovable: 0
 --- !u!114 &114602878476543760
 MonoBehaviour:
   m_ObjectHideFlags: 1

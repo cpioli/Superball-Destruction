@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
 public class SuperballBehavior : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class SuperballBehavior : MonoBehaviour
         DEAD
     }
     public SuperBallState ballState;
+    public int points;
     public float velocity = 1.0f;
     public float maxSpeed = 22.352f; //meters per second (50mph)
     public float velocityThreshold; //if velocity.magnitude < velocityThreshold, gravity is on
@@ -180,6 +182,8 @@ public class SuperballBehavior : MonoBehaviour
         isLastObjectBreakable = isCurrentObjectBreakable;
         isCurrentObjectBreakable = other.gameObject.GetComponent<MirrorBehavior>() != null ? true : false;
 
+
+        ExecuteEvents.Execute<IGameEventHandler>(GameObject.Find("GameManager"), null, (x, y) => x.UpdateScore(points, isCurrentObjectBreakable));
         if (isLastObjectBreakable != isCurrentObjectBreakable)
         {
             currentFibonacci = 0;
