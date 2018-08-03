@@ -19,6 +19,7 @@ public interface IGameEventHandler : IEventSystemHandler {
 
     //game states
     void GameStart();
+    void FiredCannon();
     void GameIsPaused();
     void GameIsResumed();
     void GameQuit();

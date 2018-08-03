@@ -77,6 +77,13 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
         sbBehavior.StartupBallCannon();
     }
 
+    public void FiredCannon()
+    {
+        CannonCamera.GetComponent<Camera>().enabled = false;
+        RoomCamera.GetComponent<Camera>().enabled = true;
+        root.worldCamera = RoomCamera;
+    }
+
     //triggered by: keyboard input
     public void GameIsPaused()
     {
@@ -124,7 +131,7 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     //or superball behavior
     public void UpdateScore(int addition, bool isBreakable)
     {
-        string message = "";
+       /* string message = "";
         if(lastObjectWasBreakable && isBreakable)
         {
             message += "Rally ";
@@ -135,7 +142,7 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
         }
         lastObjectWasBreakable = isBreakable;
         message += addition.ToString();
-        ExecuteEvents.Execute<IGameHUDEvent>(GameHUD.gameObject, null, (x, y) => x.AddNewMessage(message));
+        ExecuteEvents.Execute<IGameHUDEvent>(GameHUD.gameObject, null, (x, y) => x.AddNewMessage(message));*/
 
         score += addition;
         ExecuteEvents.Execute<IGameHUDEvent>(GameHUD.gameObject, null, (x, y) => x.UpdateScore(score));

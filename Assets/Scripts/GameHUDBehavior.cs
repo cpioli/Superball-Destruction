@@ -31,13 +31,14 @@ public class GameHUDBehavior : MonoBehaviour, IGameHUDEvent {
 
     //Adds new text obj to the bottom of the scrollview housing new message
     //scrolls the list down one space to make room for new object
-    public void AddNewMessage(string message)
+    /*public void AddNewMessage(string message)
     {
+        print("Entered AddNewMessage. List of updates counter = " + listOfUpdatesCounter);
         //1) put the message into the next text object
         listOfUpdates[listOfUpdatesCounter].GetComponent<Text>().text = message;
         //2) place the message at the bottom of the children
         listOfUpdates[listOfUpdatesCounter].SetActive(true);
-        listOfUpdates[listOfUpdatesCounter].transform.SetParent(UpdateList.transform);
+        listOfUpdates[listOfUpdatesCounter].transform.SetParent(UpdateList.gameObject.transform, false);
         listOfUpdates[listOfUpdatesCounter].transform.SetAsLastSibling();
         listOfUpdatesCounter = (listOfUpdatesCounter++) % listOfUpdates.Length;
         //3) Remove an entry in the list if we have used the maximum
@@ -49,7 +50,7 @@ public class GameHUDBehavior : MonoBehaviour, IGameHUDEvent {
             oldestUpdate.SetActive(false);
             updatesListed = 7;
         }
-    }
+    }*/
 
     public void UpdateScore(int newScore)
     {
