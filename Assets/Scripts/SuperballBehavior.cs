@@ -129,6 +129,7 @@ public class SuperballBehavior : MonoBehaviour
         if(accumulatedTime >= 1.0f) //alternatively use if(rBody.velocity.x == 0f) or if(rBody.velocity.z == 0f)
         {
             ballState = SuperBallState.DEAD;
+            rBody.velocity = Vector3.zero;
             ExecuteEvents.Execute<IGameEventHandler>(GameObject.Find("GameManager"), null, (x, y) => x.GameIsOver());
         }
     }

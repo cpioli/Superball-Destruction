@@ -115,7 +115,7 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     public void GameIsOver()
     {
         currentGameState = GameState.GAMEOVER;
-        StartMenu.gameObject.SetActive(false);
+        GameHUD.gameObject.SetActive(false);
         PointsTally.gameObject.SetActive(true);
         PointsTally.GetComponent<PointsTallyBehavior>().BeginTallySequence(itemsBroken, score);
         root.worldCamera = StartMenuCamera;
