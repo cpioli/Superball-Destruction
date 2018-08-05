@@ -28,23 +28,18 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
 
     private SuperballBehavior sbBehavior;
     private int score;
+    private int itemsBroken;
     private bool lastObjectWasBreakable;
 
-    // Use this for initialization
     void Start () {
-        //ExecuteEvents.Execute<IGameEventHandler>(this.gameObject, null, (x, y) => x.GameStart());
         sbBehavior = GameObject.Find("Sphere").GetComponent<SuperballBehavior>();
         root.worldCamera = StartMenuCamera;
         currentGameState = GameState.STARTMENU;
         CannonCamera.GetComponent<Camera>().enabled = false;
         StartMenuCamera.GetComponent<Camera>().enabled = true;
         StartMenu.gameObject.SetActive(true);
-
-        score = 0;
-        lastObjectWasBreakable = false;
     }
 
-    // Update is called once per frame
     void Update () {
 		switch(currentGameState)
         {
@@ -63,11 +58,12 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
 	}
 
     //triggered by: clicking on BeginGame in the Start Menu
-    //TODO: switch to Cannon's Camera (titled: "Main Camera")
-    //TODO: set main Canvas's world camera to "Main Camera")
     //TODO: turn on music
     public void GameStart()
     {
+        score = 0;
+        itemsBroken = 0;
+        lastObjectWasBreakable = false;
         currentGameState = GameState.INPLAY;
         StartMenuCamera.GetComponent<Camera>().enabled = false;
         CannonCamera.GetComponent<Camera>().enabled = true;
@@ -100,7 +96,7 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     {
         currentGameState = GameState.INPLAY;
         StartMenu.gameObject.SetActive(true);
-        PauseMenu.gameObject.SetActive(true);
+        PauseMenu.gameObject.SetActive(false);
     }
 
     //triggered by: button input
@@ -109,7 +105,7 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     //                currentGameState == GameState.STARTMENU
     public void GameQuit()
     {
-
+        
     }
 
     //triggered by: SuperballBehavior.ballState.DEAD and XZDegradation method
@@ -118,32 +114,48 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     //TODO: switch to high score screen
     public void GameIsOver()
     {
+        currentGameState = GameState.GAMEOVER;
+        StartMenu.gameObject.SetActive(false);
+        PointsTally.gameObject.SetActive(true);
+        PointsTally.GetComponent<PointsTallyBehavior>().BeginTallySequence(itemsBroken, score);
+        root.worldCamera = StartMenuCamera;
+        RoomCamera.GetComponent<Camera>().enabled = false;
+        StartMenuCamera.GetComponent<Camera>().enabled = true;
+        
+    }
+
+    public void CheckHighScoreScreen()
+    {
 
     }
 
     //triggered by: "Clicking to Continue" in high score menu after game over
     public void ReturnToStartMenu()
     {
-
+        //code to teardown the PointsTally screen.
+        //this block will be moved to CheckHighScoreScreen once it's implemented
+        PointsTally.GetComponent<PointsTallyBehavior>().Disassemble();
+        PointsTally.gameObject.SetActive(false);
+        StartMenu.gameObject.SetActive(true);
     }
     
     //triggered by: Any time a collision occurs. Can be implemented in object scripts
     //or superball behavior
     public void UpdateScore(int addition, bool isBreakable)
     {
-       /* string message = "";
-        if(lastObjectWasBreakable && isBreakable)
-        {
-            message += "Rally ";
-        }
-        if(lastObjectWasBreakable && !isBreakable)
-        {
-            message += "Broken ";
-        }
-        lastObjectWasBreakable = isBreakable;
-        message += addition.ToString();
-        ExecuteEvents.Execute<IGameHUDEvent>(GameHUD.gameObject, null, (x, y) => x.AddNewMessage(message));*/
-
+        /* string message = "";
+         if(lastObjectWasBreakable && isBreakable)
+         {
+             message += "Rally ";
+         }
+         if(lastObjectWasBreakable && !isBreakable)
+         {
+             message += "Broken ";
+         }
+         lastObjectWasBreakable = isBreakable;
+         message += addition.ToString();
+         ExecuteEvents.Execute<IGameHUDEvent>(GameHUD.gameObject, null, (x, y) => x.AddNewMessage(message));*/
+        itemsBroken++;
         score += addition;
         ExecuteEvents.Execute<IGameHUDEvent>(GameHUD.gameObject, null, (x, y) => x.UpdateScore(score));
     }

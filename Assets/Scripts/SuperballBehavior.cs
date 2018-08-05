@@ -110,8 +110,7 @@ public class SuperballBehavior : MonoBehaviour
 
     void LaunchBall()
     {
-        GameObject.Find("Main Camera").GetComponent<Camera>().enabled = false;
-        GameObject.Find("RoomCamera").GetComponent<Camera>().enabled = true;
+        ExecuteEvents.Execute<IGameEventHandler>(GameObject.Find("GameManager"), null, (x, y) => x.FiredCannon());
         print("Adding force!");
         ballState = SuperBallState.LIVE;
         rBody.AddForce(CannonBarrel.transform.up.normalized * velocity, ForceMode.Impulse);
@@ -130,6 +129,7 @@ public class SuperballBehavior : MonoBehaviour
         if(accumulatedTime >= 1.0f) //alternatively use if(rBody.velocity.x == 0f) or if(rBody.velocity.z == 0f)
         {
             ballState = SuperBallState.DEAD;
+            ExecuteEvents.Execute<IGameEventHandler>(GameObject.Find("GameManager"), null, (x, y) => x.GameIsOver());
         }
     }
 
@@ -158,7 +158,7 @@ public class SuperballBehavior : MonoBehaviour
         if (ballState != SuperBallState.LIVE && ballState != SuperBallState.FALLING)
             return;
 
-        CheckForVelocityDampening();
+        //CheckForVelocityDampening();
 
         previousMagnitude = rBody.velocity.magnitude;
         Debug.DrawLine(rBody.position, lastCollisionLocation, Color.yellow, 480f);
@@ -183,7 +183,6 @@ public class SuperballBehavior : MonoBehaviour
         isCurrentObjectBreakable = other.gameObject.GetComponent<MirrorBehavior>() != null ? true : false;
 
 
-        ExecuteEvents.Execute<IGameEventHandler>(GameObject.Find("GameManager"), null, (x, y) => x.UpdateScore(points, isCurrentObjectBreakable));
         if (isLastObjectBreakable != isCurrentObjectBreakable)
         {
             currentFibonacci = 0;
@@ -198,7 +197,7 @@ public class SuperballBehavior : MonoBehaviour
         else
             HandleUnbreakableObjectCollision(-fibonacciIncrement[currentFibonacci], other);
 
-        CheckForVelocityDampening();
+        //CheckForVelocityDampening();
 
         //next update: when speed is less than x meters-per-second turn on gravity
         if(rBody.velocity.magnitude < velocityThreshold && !liveStateOverridesFallingCheck && ballState != SuperBallState.FALLING)
@@ -211,6 +210,7 @@ public class SuperballBehavior : MonoBehaviour
 
     private void HandleBreakableObjectCollision(float increment, Collision collision)
     {
+        ExecuteEvents.Execute<IGameEventHandler>(GameObject.Find("GameManager"), null, (x, y) => x.UpdateScore(points, isCurrentObjectBreakable));
 
         Debug.Log((collisionID-1).ToString() + " BREAKABLE Object! At Position " + lastCollisionLocation +
             " Against object " + collision.transform.gameObject.name + "\n" +
