@@ -7,6 +7,13 @@ using UnityEngine.EventSystems;
 
 public class PointsTallyBehavior : MonoBehaviour {
 
+    enum countingType
+    {
+        NONE,
+        OBJECTS,
+        SCORE
+    };
+    countingType whatsCountingNow;
     Sequence pointsTallySequence;
 
     [Range(0.1f, 2.0f)]
@@ -37,6 +44,7 @@ public class PointsTallyBehavior : MonoBehaviour {
     public Text ClickToContinue;
 
     private int objectsBroken, totalScore;
+    private float objectsBrokenLerper, objectsBrokenLerpDuration, totalScoreLerper, totalScoreLerpDuration;
     private bool clickToContinueDisplayed;
     private const int LMB = 0;
     private const int RMB = 1;
@@ -49,16 +57,36 @@ public class PointsTallyBehavior : MonoBehaviour {
 
         clickToContinueDisplayed = false;
         Disassemble();
-
+        whatsCountingNow = countingType.NONE;
     }
 
     public void Update()
+    {
+        switch(whatsCountingNow)
+        {
+            case countingType.NONE:
+                CheckIfPlayerContinues();
+                return;
+
+            case countingType.OBJECTS:
+                LerpTheObjectsCounter();
+                return;
+
+            case countingType.SCORE:
+                LerpTheScoreCounter();
+                return;
+        }
+
+
+    }
+
+    private void CheckIfPlayerContinues()
     {
         if (!clickToContinueDisplayed)
         {
             return;
         }
-        if(Input.GetMouseButtonUp(LMB) || Input.GetMouseButtonUp(RMB))
+        if (Input.GetMouseButtonUp(LMB) || Input.GetMouseButtonUp(RMB))
         {
 
             ExecuteEvents.Execute<IGameEventHandler>(GameObject.Find("GameManager"), null, (x, y) => x.ReturnToStartMenu());
@@ -68,7 +96,16 @@ public class PointsTallyBehavior : MonoBehaviour {
     public void BeginTallySequence(int objectsBroken, int totalScore)
     {
         this.totalScore = totalScore;
+        totalScoreLerper = 0f;
+        totalScoreLerpDuration = 0f;
+        TotalScoreCount.text = totalScore.ToString();
         this.objectsBroken = objectsBroken;
+        objectsBrokenLerper = 0f;
+        objectsBrokenLerpDuration = 0f;
+        ObjectsBrokenCount.text = objectsBroken.ToString();
+
+        print(totalScore + " " + objectsBroken);
+
         pointsTallySequence = DOTween.Sequence();
 
         pointsTallySequence.AppendInterval(durb4_GameOverAppears)
@@ -103,6 +140,21 @@ public class PointsTallyBehavior : MonoBehaviour {
         ObjectsBrokenCount.gameObject.SetActive(true);
     }
 
+    private void LerpTheObjectsCounter()
+    {
+        objectsBrokenLerpDuration += Time.deltaTime;
+        if (objectsBrokenLerpDuration > durof_CountObjectsBroken)
+        {
+            objectsBrokenLerpDuration = durof_CountObjectsBroken;
+            whatsCountingNow = countingType.NONE;
+        }
+        print(objectsBroken);
+        float timeToLerp = objectsBrokenLerpDuration / durof_CountObjectsBroken;
+        int currentCount = (int)Mathf.Lerp(0, objectsBroken, timeToLerp);
+        print(currentCount);
+        ObjectsBrokenCount.text = currentCount.ToString();
+    }
+
     private void DisplayMultiplier()
     {
         multiplier.gameObject.SetActive(true);
@@ -113,9 +165,24 @@ public class PointsTallyBehavior : MonoBehaviour {
         TotalScoreTitle.gameObject.SetActive(true);
     }
 
+    private void LerpTheScoreCounter()
+    {
+        totalScoreLerpDuration += Time.deltaTime;
+        if(totalScoreLerpDuration > durof_CountTotalScore)
+        {
+            totalScoreLerpDuration = durof_CountObjectsBroken;
+            whatsCountingNow = countingType.NONE;
+        }
+        float timeToLerp = totalScoreLerpDuration / durof_CountTotalScore;
+        int currentScore = (int)Mathf.Lerp(0, totalScore, timeToLerp);
+        print(currentScore);
+        TotalScoreCount.text = currentScore.ToString();
+    }
+
     private void CountTotalScore()
     {
         TotalScoreCount.gameObject.SetActive(true);
+        whatsCountingNow = countingType.SCORE;
     }
 
     private void DisplayClickToContinue()
