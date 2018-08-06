@@ -7,13 +7,6 @@ using UnityEngine.EventSystems;
 
 public class PointsTallyBehavior : MonoBehaviour {
 
-    enum countingType
-    {
-        NONE,
-        OBJECTS,
-        SCORE
-    };
-    countingType whatsCountingNow;
     Sequence pointsTallySequence;
 
     [Range(0.1f, 2.0f)]
@@ -23,15 +16,11 @@ public class PointsTallyBehavior : MonoBehaviour {
     [Range(0.1f, 2.0f)]
     public float durb4_DisplayCountObjectsBroken;
     [Range(0.1f, 2.0f)]
-    public float durof_CountObjectsBroken;
-    [Range(0.1f, 2.0f)]
     public float durb4_DisplayMultiplier;
     [Range(0.1f, 2.0f)]
     public float durb4_DisplayTotalScoreTitle;
     [Range(0.1f, 2.0f)]
     public float durb4_DisplayCountTotalScore;
-    [Range(0.1f, 2.0f)]
-    public float durof_CountTotalScore;
     [Range(0.1f, 2.0f)]
     public float durb4_DisplayClickToContinue;
 
@@ -43,9 +32,9 @@ public class PointsTallyBehavior : MonoBehaviour {
     public Text TotalScoreCount;
     public Text ClickToContinue;
 
-    private int objectsBroken, totalScore;
-    private float objectsBrokenLerper, objectsBrokenLerpDuration, totalScoreLerper, totalScoreLerpDuration;
     private bool clickToContinueDisplayed;
+    private int totalScore;
+    private int objectsBroken;
     private const int LMB = 0;
     private const int RMB = 1;
 
@@ -53,34 +42,10 @@ public class PointsTallyBehavior : MonoBehaviour {
     {
         totalScore = 0;
         objectsBroken = 0;
-        
-
         clickToContinueDisplayed = false;
-        Disassemble();
-        whatsCountingNow = countingType.NONE;
     }
 
     public void Update()
-    {
-        switch(whatsCountingNow)
-        {
-            case countingType.NONE:
-                CheckIfPlayerContinues();
-                return;
-
-            case countingType.OBJECTS:
-                LerpTheObjectsCounter();
-                return;
-
-            case countingType.SCORE:
-                LerpTheScoreCounter();
-                return;
-        }
-
-
-    }
-
-    private void CheckIfPlayerContinues()
     {
         if (!clickToContinueDisplayed)
         {
@@ -95,16 +60,11 @@ public class PointsTallyBehavior : MonoBehaviour {
 
     public void BeginTallySequence(int objectsBroken, int totalScore)
     {
-        this.totalScore = totalScore;
-        totalScoreLerper = 0f;
-        totalScoreLerpDuration = 0f;
+        clickToContinueDisplayed = false;
+        print(objectsBroken + " " + totalScore);
         TotalScoreCount.text = totalScore.ToString();
-        this.objectsBroken = objectsBroken;
-        objectsBrokenLerper = 0f;
-        objectsBrokenLerpDuration = 0f;
         ObjectsBrokenCount.text = objectsBroken.ToString();
-
-        print(totalScore + " " + objectsBroken);
+        Disassemble();
 
         pointsTallySequence = DOTween.Sequence();
 
@@ -113,14 +73,14 @@ public class PointsTallyBehavior : MonoBehaviour {
                            .AppendInterval(durb4_DisplayObjectsBrokenTitle)
                            .AppendCallback(DisplayObjectsBrokenTitle)
                            .AppendInterval(durb4_DisplayCountObjectsBroken)
-                           .AppendCallback(CountObjectsBroken)
-                           .AppendInterval(durb4_DisplayMultiplier + durof_CountObjectsBroken)
+                           .AppendCallback(DisplayTotalObjectsBroken)
+                           .AppendInterval(durb4_DisplayMultiplier)
                            .AppendCallback(DisplayMultiplier)
                            .AppendInterval(durb4_DisplayTotalScoreTitle)
                            .AppendCallback(DisplayTotalScoreTitle)
                            .AppendInterval(durb4_DisplayCountTotalScore)
-                           .AppendCallback(CountTotalScore)
-                           .AppendInterval(durb4_DisplayClickToContinue + durof_CountTotalScore)
+                           .AppendCallback(DisplayTotalScore)
+                           .AppendInterval(durb4_DisplayClickToContinue)
                            .AppendCallback(DisplayClickToContinue);
     }
 
@@ -135,24 +95,9 @@ public class PointsTallyBehavior : MonoBehaviour {
         ObjectsBrokenTitle.gameObject.SetActive(true);
     }
 
-    private void CountObjectsBroken()
+    private void DisplayTotalObjectsBroken()
     {
         ObjectsBrokenCount.gameObject.SetActive(true);
-    }
-
-    private void LerpTheObjectsCounter()
-    {
-        objectsBrokenLerpDuration += Time.deltaTime;
-        if (objectsBrokenLerpDuration > durof_CountObjectsBroken)
-        {
-            objectsBrokenLerpDuration = durof_CountObjectsBroken;
-            whatsCountingNow = countingType.NONE;
-        }
-        print(objectsBroken);
-        float timeToLerp = objectsBrokenLerpDuration / durof_CountObjectsBroken;
-        int currentCount = (int)Mathf.Lerp(0, objectsBroken, timeToLerp);
-        print(currentCount);
-        ObjectsBrokenCount.text = currentCount.ToString();
     }
 
     private void DisplayMultiplier()
@@ -165,24 +110,9 @@ public class PointsTallyBehavior : MonoBehaviour {
         TotalScoreTitle.gameObject.SetActive(true);
     }
 
-    private void LerpTheScoreCounter()
-    {
-        totalScoreLerpDuration += Time.deltaTime;
-        if(totalScoreLerpDuration > durof_CountTotalScore)
-        {
-            totalScoreLerpDuration = durof_CountObjectsBroken;
-            whatsCountingNow = countingType.NONE;
-        }
-        float timeToLerp = totalScoreLerpDuration / durof_CountTotalScore;
-        int currentScore = (int)Mathf.Lerp(0, totalScore, timeToLerp);
-        print(currentScore);
-        TotalScoreCount.text = currentScore.ToString();
-    }
-
-    private void CountTotalScore()
+    private void DisplayTotalScore()
     {
         TotalScoreCount.gameObject.SetActive(true);
-        whatsCountingNow = countingType.SCORE;
     }
 
     private void DisplayClickToContinue()
@@ -198,9 +128,7 @@ public class PointsTallyBehavior : MonoBehaviour {
         ObjectsBrokenTitle.gameObject.SetActive(false);
         TotalScoreTitle.gameObject.SetActive(false);
         multiplier.gameObject.SetActive(false);
-        ObjectsBrokenCount.text = "0";
         ObjectsBrokenCount.gameObject.SetActive(false);
-        TotalScoreCount.text = "0";
         TotalScoreCount.gameObject.SetActive(false);
         ClickToContinue.gameObject.SetActive(false);
     }
