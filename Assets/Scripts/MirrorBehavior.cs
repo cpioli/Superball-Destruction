@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.EventSystems;
 
 public class MirrorBehavior : MonoBehaviour {
 
@@ -15,5 +16,6 @@ public class MirrorBehavior : MonoBehaviour {
         {
             this.transform.GetChild(0).gameObject.GetComponent<MeshCollider>().enabled = false;
         }
+        ExecuteEvents.Execute<IGameEventHandler>(GameObject.Find("GameManager"), null, (x, y) => x.RegisterGameObjectDestroyed(this.gameObject));
     }
 }

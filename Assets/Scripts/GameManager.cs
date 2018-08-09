@@ -31,6 +31,8 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     private int itemsBroken;
     private bool lastObjectWasBreakable;
 
+    private Stack<GameObject> destroyedObjects; //keep this to restart things
+
     void Start () {
         sbBehavior = GameObject.Find("Sphere").GetComponent<SuperballBehavior>();
         root.worldCamera = StartMenuCamera;
@@ -71,6 +73,17 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
         StartMenu.gameObject.SetActive(false);
         GameHUD.gameObject.SetActive(true);
         sbBehavior.StartupBallCannon();
+        while(destroyedObjects.Count > 0)
+        {
+            GameObject go = destroyedObjects.Pop();
+            go.GetComponent<MeshRenderer>().enabled = true;
+            if (GetComponent<BoxCollider>() != null)
+                this.GetComponent<BoxCollider>().enabled = true;
+            else
+            {
+                this.transform.GetChild(0).gameObject.GetComponent<MeshCollider>().enabled = true;
+            }
+        }
     }
 
     public void FiredCannon()
@@ -158,6 +171,11 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
         itemsBroken++;
         score += addition;
         ExecuteEvents.Execute<IGameHUDEvent>(GameHUD.gameObject, null, (x, y) => x.UpdateScore(score));
+    }
+
+    public void RegisterGameObjectDestroyed(GameObject go)
+    {
+        destroyedObjects.Push(go);
     }
 
     public GameState GetCurrentGameState()

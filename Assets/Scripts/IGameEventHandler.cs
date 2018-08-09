@@ -28,4 +28,5 @@ public interface IGameEventHandler : IEventSystemHandler {
     void ReturnToStartMenu();
 
     void UpdateScore(int addition, bool isBreakable);
+    void RegisterGameObjectDestroyed(GameObject go);
 }
