@@ -100,7 +100,7 @@ GameObject:
   - component: {fileID: 114373753013399894}
   - component: {fileID: 54979163354555530}
   - component: {fileID: 135082707243700502}
-  - component: {fileID: 114848115987819292}
+  - component: {fileID: 114535276762871270}
   m_Layer: 8
   m_Name: Sphere
   m_TagString: Untagged
@@ -5186,6 +5186,19 @@ MonoBehaviour:
   RicochetArrows: {fileID: 0}
   CannonBarrel: {fileID: 1423119553815232}
   isCannonMovable: 0
+--- !u!114 &114535276762871270
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1827221709158440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b20aa2f4ea3611e469524738543ad3f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fieldOfView: 15
+  maxMoveInDegrees: 15
 --- !u!114 &114602878476543760
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -6121,19 +6134,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _entityType: 4
---- !u!114 &114848115987819292
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1827221709158440}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b20aa2f4ea3611e469524738543ad3f0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  fieldOfView: 0
-  maxMoveInDegrees: 15
 --- !u!114 &114970974827805222
 MonoBehaviour:
   m_ObjectHideFlags: 1
