@@ -26,7 +26,13 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     public Camera CannonCamera;
     public Camera RoomCamera;
 
+    public GameObject Sphere;
+    public GameObject Cannon;
+    public GameObject Arrows;
+
     private SuperballBehavior sbBehavior;
+    private Transform ballCannonTransform;
+    private Transform ballTransform;
     private int score;
     private int itemsBroken;
     private bool lastObjectWasBreakable;
@@ -34,7 +40,12 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     private Stack<GameObject> destroyedObjects; //keep this to restart things
 
     void Start () {
-        sbBehavior = GameObject.Find("Sphere").GetComponent<SuperballBehavior>();
+        sbBehavior = Sphere.GetComponent<SuperballBehavior>();
+        destroyedObjects = new Stack<GameObject>();
+
+        ballCannonTransform = Cannon.transform;
+        ballTransform = Sphere.transform;
+
         root.worldCamera = StartMenuCamera;
         currentGameState = GameState.STARTMENU;
         CannonCamera.GetComponent<Camera>().enabled = false;
@@ -63,17 +74,51 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     //TODO: turn on music
     public void GameStart()
     {
+        currentGameState = GameState.INPLAY;
         score = 0;
         itemsBroken = 0;
         lastObjectWasBreakable = false;
-        currentGameState = GameState.INPLAY;
+        SetupCameraAndUI();
+
+        SetCannonToActiveState();
+        sbBehavior.StartupBallCannon();
+        ReturnBallToCannon();
+        RestoreBrokenItems();
+    }
+
+    #region GameStartMethods!
+    private void SetupCameraAndUI() //can also add the Pause Menu screen here
+    {
         StartMenuCamera.GetComponent<Camera>().enabled = false;
         CannonCamera.GetComponent<Camera>().enabled = true;
         root.worldCamera = CannonCamera;
         StartMenu.gameObject.SetActive(false);
         GameHUD.gameObject.SetActive(true);
-        sbBehavior.StartupBallCannon();
-        while(destroyedObjects.Count > 0)
+    }
+
+    private void ReturnBallToCannon()
+    {
+        Sphere.transform.parent = Cannon.transform;
+        Sphere.transform.position = ballTransform.position;
+        Sphere.transform.rotation = ballTransform.rotation;
+    }
+
+    private void SetCannonToActiveState()
+    {
+        if (!Cannon.activeInHierarchy)
+        {
+            Cannon.gameObject.SetActive(true);
+        }
+        if (!Arrows.activeInHierarchy)
+        {
+            Arrows.gameObject.SetActive(true);
+        }
+    }
+
+    private void RestoreBrokenItems()
+    {
+        //restore all broken elements
+        while (destroyedObjects.Count > 0)
         {
             GameObject go = destroyedObjects.Pop();
             go.GetComponent<MeshRenderer>().enabled = true;
@@ -85,13 +130,36 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
             }
         }
     }
+    #endregion
 
     public void FiredCannon()
     {
         CannonCamera.GetComponent<Camera>().enabled = false;
         RoomCamera.GetComponent<Camera>().enabled = true;
         root.worldCamera = RoomCamera;
+        RemoveBallFromCannon();
+        ResetCannonPosition();
+        DeactivateCannonAndArrows();
     }
+
+    #region FiredCannonMethods
+    private void ResetCannonPosition()
+    {
+        Cannon.transform.position = ballCannonTransform.position;
+        Cannon.transform.rotation = ballCannonTransform.rotation;
+    }
+
+    private void DeactivateCannonAndArrows()
+    {
+        Cannon.SetActive(false);
+        Arrows.SetActive(false);
+    }
+
+    private void RemoveBallFromCannon()
+    {
+        Sphere.transform.parent = null;
+    }
+    #endregion
 
     //triggered by: keyboard input
     public void GameIsPaused()
