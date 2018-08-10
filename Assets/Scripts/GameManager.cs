@@ -122,25 +122,11 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
         {
             GameObject go = destroyedObjects.Pop();
             go.GetComponent<MeshRenderer>().enabled = true;
-            if (go.GetComponent<BoxCollider>() != null)
-                go.GetComponent<BoxCollider>().enabled = true;
+            if (GetComponent<BoxCollider>() != null)
+                this.GetComponent<BoxCollider>().enabled = true;
             else
             {
-                try
-                {
-                    GameObject go1 = go.transform.GetChild(0).gameObject;
-                    
-                } catch(UnityException e)
-                {
-                    string s = go.name;
-                    while(go.transform.parent != null)
-                    {
-                        go = go.transform.parent.gameObject;
-                        s += "-" + go.name;
-                    }
-                    Debug.LogError("Having a problem with object " + s);
-                    print(e.Message);
-                }
+                this.transform.GetChild(0).gameObject.GetComponent<MeshCollider>().enabled = true;
             }
         }
     }
