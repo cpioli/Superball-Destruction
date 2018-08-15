@@ -43,8 +43,9 @@ public class SuperballBehavior : MonoBehaviour
     private int collisionID;
 
     // Use this for initialization
-    void Start()
+    void Awake()
     {
+        print("ball state is DEAD");
         ballState = SuperBallState.DEAD;
         hitBreakableObject = false;
         xZeroVelocityCount = 0;
@@ -97,6 +98,7 @@ public class SuperballBehavior : MonoBehaviour
 
     public void StartupBallCannon()
     {
+        print("Ball State is ATREST");
         ballState = SuperBallState.ATREST;
     }
 

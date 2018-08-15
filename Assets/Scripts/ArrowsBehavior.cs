@@ -1,11 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class ArrowsBehavior : MonoBehaviour {
+public class ArrowsBehavior : MonoBehaviour, ISuperballInstantiatedEvent {
 
     public GameObject ricochetArrow;
 
+    private bool ballTrackable;
     private Vector3 aimArrowDirection, ricochetArrowDirection;
     private RaycastHit hitInfo;
     private SphereCollider sphereCollider;
@@ -14,12 +16,12 @@ public class ArrowsBehavior : MonoBehaviour {
 	void Start () {
         aimArrowDirection = Vector3.zero;
         ricochetArrowDirection = Vector3.zero;
-        sphereCollider = GameObject.Find("Sphere").GetComponent<SphereCollider>();
-
+        ballTrackable = false;
     }
 
     public void AlignArrowsForAiming(Vector3 position, Quaternion orientation)
     {
+        if (!ballTrackable) return;
         //step1: figure out how to orient the first arrow (this)
         transform.position = position;
         transform.LookAt(position + orientation * Vector3.up);
@@ -67,4 +69,18 @@ public class ArrowsBehavior : MonoBehaviour {
         Debug.DrawRay(origin, rotation * Vector3.left, Color.green, 480f);
         Debug.DrawRay(origin, rotation * Vector3.right, Color.yellow, 480f);
     }
+
+    public void SuperballIsBuilt()
+    {
+        sphereCollider = GameObject.Find("Sphere").GetComponent<SphereCollider>();
+        ballTrackable = true;
+
+    }
+
+    public void SuperballIsDestroyed()
+    {
+        ballTrackable = false;
+    }
+
+
 }

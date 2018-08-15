@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class CannonBehavior : MonoBehaviour {
+public class CannonBehavior : MonoBehaviour, ISuperballInstantiatedEvent {
 
     public float translationSpeed = .025f;
     public float shift = 80f;
@@ -23,7 +24,6 @@ public class CannonBehavior : MonoBehaviour {
 
     private List<float> rotArrayX = new List<float>();
     float rotAverageX = 0F;
-
     private List<float> rotArrayY = new List<float>();
     float rotAverageY = 0F;
 
@@ -32,14 +32,16 @@ public class CannonBehavior : MonoBehaviour {
     Quaternion originalRotation;
 
     //reusable components to save memory.
+    public bool isCannonMovable;
     public GameObject RicochetArrows;
     public GameObject CannonBarrel;
+
+    private bool ballBehaviorTrackable;
     private SphereCollider sphereCollider;
     private RaycastHit hitInfo;
     private SuperballBehavior sbBehavior;
     private GameManager gameManager;
     private ArrowsBehavior arrowsBehavior;
-    public bool isCannonMovable;
 
     // Use this for initialization
     void Start () {
@@ -49,16 +51,31 @@ public class CannonBehavior : MonoBehaviour {
         //        Rigidbody rb = GetComponent<Rigidbody>();
         //        if (rb)
         //            rb.freezeRotation = true;
-        sphereCollider = GameObject.Find("Sphere").GetComponent<SphereCollider>();
         originalRotation = transform.localRotation;
-        sbBehavior = GameObject.Find("Sphere").GetComponent<SuperballBehavior>();
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         arrowsBehavior = GameObject.Find("Arrows").GetComponent<ArrowsBehavior>();
         isCannonMovable = false;
+        ballBehaviorTrackable = false;
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    //event method
+    public void SuperballIsBuilt()
+    {
+        sphereCollider = GameObject.Find("Sphere").GetComponent<SphereCollider>();
+        sbBehavior = GameObject.Find("Sphere").GetComponent<SuperballBehavior>();
+        ballBehaviorTrackable = true;
+        print("Ball behavior is trackable now!");
+    }
+
+    public void SuperballIsDestroyed()
+    {
+        ballBehaviorTrackable = false;
+    }
+
+    // Update is called once per frame
+    void Update () {
+        if (!ballBehaviorTrackable) return;
+
         if (sbBehavior.ballState == SuperballBehavior.SuperBallState.ATREST)
         {
             UpdateControls();
@@ -73,6 +90,7 @@ public class CannonBehavior : MonoBehaviour {
     //only runs if the ball is in the ATREST state
     void UpdateControls()
     {
+        print("update controls");
         float currentSpeed = translationSpeed;
         bool goFaster = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         if (goFaster) currentSpeed += shift;

@@ -33,6 +33,7 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     private SuperballBehavior sbBehavior;
     private Transform ballCannonTransform;
     private Transform ballTransform;
+    private Vector3 sphereStartPos = new Vector3(0.0f, 0.033f, 0.0f);
     private int score;
     private int itemsBroken;
     private bool lastObjectWasBreakable;
@@ -40,7 +41,6 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     private Stack<GameObject> destroyedObjects; //keep this to restart things
 
     void Start () {
-        sbBehavior = Sphere.GetComponent<SuperballBehavior>();
         destroyedObjects = new Stack<GameObject>();
 
         ballCannonTransform = Cannon.transform;
@@ -75,18 +75,29 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     public void GameStart()
     {
         currentGameState = GameState.INPLAY;
+        
         score = 0;
         itemsBroken = 0;
         lastObjectWasBreakable = false;
+        LoadBall();
         SetupCameraAndUI();
-
         SetCannonToActiveState();
-        sbBehavior.StartupBallCannon();
-        ReturnBallToCannon();
+
         RestoreBrokenItems();
     }
 
     #region GameStartMethods!
+    private void LoadBall()
+    {
+        Sphere = GameObject.Instantiate(this.Sphere, Cannon.transform, false);
+        Sphere.gameObject.name = "Sphere";
+        sbBehavior = Sphere.GetComponent<SuperballBehavior>();
+        sbBehavior.StartupBallCannon();
+        Sphere.transform.localPosition = sphereStartPos;
+        ExecuteEvents.Execute<ISuperballInstantiatedEvent>(Cannon, null, (x, y) => x.SuperballIsBuilt());
+        ExecuteEvents.Execute<ISuperballInstantiatedEvent>(Arrows, null, (x, y) => x.SuperballIsBuilt());
+        ExecuteEvents.Execute<ISuperballInstantiatedEvent>(GameObject.Find("RoomCamera"), null, (x, y) => x.SuperballIsBuilt());
+    }
     private void SetupCameraAndUI() //can also add the Pause Menu screen here
     {
         StartMenuCamera.GetComponent<Camera>().enabled = false;
@@ -94,13 +105,6 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
         root.worldCamera = CannonCamera;
         StartMenu.gameObject.SetActive(false);
         GameHUD.gameObject.SetActive(true);
-    }
-
-    private void ReturnBallToCannon()
-    {
-        Sphere.transform.parent = Cannon.transform;
-        Sphere.transform.position = ballTransform.position;
-        Sphere.transform.rotation = ballTransform.rotation;
     }
 
     private void SetCannonToActiveState()
