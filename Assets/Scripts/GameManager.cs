@@ -146,10 +146,11 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
 
     public void FiredCannon()
     {
+        CannonCamera.gameObject.GetComponent<AudioListener>().enabled = false;
+
         CannonCamera.GetComponent<Camera>().enabled = false;
         RoomCamera.GetComponent<Camera>().enabled = true;
-        CannonCamera.GetComponent<AudioSource>().enabled = false;
-        RoomCamera.GetComponent<AudioSource>().enabled = true;
+        RoomCamera.gameObject.GetComponent<AudioListener>().enabled = true;
         root.worldCamera = RoomCamera;
         RemoveBallFromCannon();
         ResetCannonPosition();
