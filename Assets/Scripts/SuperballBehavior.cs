@@ -15,33 +15,32 @@ public class SuperballBehavior : MonoBehaviour
         DEAD
     }
     public SuperBallState ballState;
+
     public float velocity = 1.0f;
     public float maxSpeed = 22.352f; //meters per second (50mph)
-    public float velocityThreshold; //if velocity.magnitude < velocityThreshold, gravity is on
-    //0.44704 meters per second = 1 mile per hour
     public Vector3 forward = new Vector3(1f, 0f, 1f);
+    public AudioClip bounceSound;
 
     private bool hitBreakableObject;
+    private bool isLastObjectBreakable, isCurrentObjectBreakable; //tracks if we increment or reduce fibonacci
+    private bool liveStateOverridesFallingCheck;
     private int collisionLayer = 1 << 8;
     private int xZeroVelocityCount, yZeroVelocityCount, zZeroVelocityCount;
-    private float maxObjectDeviation = 20f; //in degrees
-    private Vector3 lastCollisionLocation, nextCollisionLocation, currentDirection;
-    private float previousMagnitude;
-    private GameObject nextCollisionObject, CannonBarrel;
-    private Rigidbody rBody;
-
-    private bool isLastObjectBreakable, isCurrentObjectBreakable; //tracks if we increment or reduce fibonacci
-    private float[] fibonacciIncrement = { 0.1f, 0.1f, 0.2f, 0.3f, 0.5f, 0.8f, 1.3f };
-    private int currentFibonacci;
-
-    private bool liveStateOverridesFallingCheck;
-    private float accumulatedTime;
-
-    private GameObject emptyGameObject;
-    private GameObject collisionFolder;
     private int collisionID;
     private int points = 100;
+    private int currentFibonacci;
 
+    private float maxObjectDeviation = 20f; //in degrees
+    private float velocityThreshold = 10f; //if velocity.magnitude < velocityThreshold, gravity is on
+    private float previousMagnitude;
+    private float[] fibonacciIncrement = { 0.1f, 0.1f, 0.2f, 0.3f, 0.5f, 0.8f, 1.3f };
+    private float accumulatedTime;
+
+    private Vector3 lastCollisionLocation, nextCollisionLocation, currentDirection;
+    private GameObject nextCollisionObject, CannonBarrel;
+    private GameObject emptyGameObject;
+    private GameObject collisionFolder;
+    private Rigidbody rBody;
 
     // Use this for initialization
     void Awake()
@@ -99,7 +98,14 @@ public class SuperballBehavior : MonoBehaviour
 
     public void StartupBallCannon()
     {
+        print("Startup ball");
         ballState = SuperBallState.ATREST;
+        rBody.useGravity = false;
+        isLastObjectBreakable = true;
+        isCurrentObjectBreakable = true;
+        liveStateOverridesFallingCheck = false;
+        accumulatedTime = 0f;
+        currentFibonacci = 0;
     }
 
     void BallAtRest()
@@ -202,7 +208,10 @@ public class SuperballBehavior : MonoBehaviour
 
         //CheckForVelocityDampening();
 
-        //next update: when speed is less than x meters-per-second turn on gravity
+        if(rBody.velocity.magnitude < velocityThreshold)
+        {
+            print("Below threshold!");
+        }
         if(rBody.velocity.magnitude < velocityThreshold && !liveStateOverridesFallingCheck && ballState != SuperBallState.FALLING)
         {
             Debug.Log("Now entering the FALLEN state: " + rBody.velocity);

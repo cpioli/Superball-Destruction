@@ -45,6 +45,12 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
 
         ballCannonTransform = Cannon.transform;
         ballTransform = Sphere.transform;
+        Sphere = GameObject.Instantiate(this.Sphere, Cannon.transform, false);
+        Sphere.gameObject.name = "Sphere";
+        sbBehavior = Sphere.GetComponent<SuperballBehavior>();
+        ExecuteEvents.Execute<ISuperballInstantiatedEvent>(Cannon, null, (x, y) => x.SuperballIsBuilt());
+        ExecuteEvents.Execute<ISuperballInstantiatedEvent>(Arrows, null, (x, y) => x.SuperballIsBuilt());
+        ExecuteEvents.Execute<ISuperballInstantiatedEvent>(GameObject.Find("RoomCamera"), null, (x, y) => x.SuperballIsBuilt());
 
         root.worldCamera = StartMenuCamera;
         currentGameState = GameState.STARTMENU;
@@ -89,14 +95,16 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     #region GameStartMethods!
     private void LoadBall()
     {
-        Sphere = GameObject.Instantiate(this.Sphere, Cannon.transform, false);
-        Sphere.gameObject.name = "Sphere";
-        sbBehavior = Sphere.GetComponent<SuperballBehavior>();
+        if(!Sphere.gameObject.activeInHierarchy)
+        {
+            Sphere.SetActive(true);
+        }
         sbBehavior.StartupBallCannon();
+        Sphere.transform.position = ballCannonTransform.position;
+        Sphere.transform.rotation = ballCannonTransform.rotation;
+        Sphere.transform.parent = Cannon.transform;
         Sphere.transform.localPosition = sphereStartPos;
-        ExecuteEvents.Execute<ISuperballInstantiatedEvent>(Cannon, null, (x, y) => x.SuperballIsBuilt());
-        ExecuteEvents.Execute<ISuperballInstantiatedEvent>(Arrows, null, (x, y) => x.SuperballIsBuilt());
-        ExecuteEvents.Execute<ISuperballInstantiatedEvent>(GameObject.Find("RoomCamera"), null, (x, y) => x.SuperballIsBuilt());
+
     }
     private void SetupCameraAndUI() //can also add the Pause Menu screen here
     {
@@ -140,6 +148,8 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     {
         CannonCamera.GetComponent<Camera>().enabled = false;
         RoomCamera.GetComponent<Camera>().enabled = true;
+        CannonCamera.GetComponent<AudioSource>().enabled = false;
+        RoomCamera.GetComponent<AudioSource>().enabled = true;
         root.worldCamera = RoomCamera;
         RemoveBallFromCannon();
         ResetCannonPosition();
@@ -206,7 +216,6 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
         root.worldCamera = StartMenuCamera;
         RoomCamera.GetComponent<Camera>().enabled = false;
         StartMenuCamera.GetComponent<Camera>().enabled = true;
-        
     }
 
     public void CheckHighScoreScreen()
