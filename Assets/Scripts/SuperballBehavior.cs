@@ -17,7 +17,8 @@ public class SuperballBehavior : MonoBehaviour
     public SuperBallState ballState;
 
     public float velocity = 1.0f;
-    public float maxSpeed = 22.352f; //meters per second (50mph)
+    //public float maxSpeed = 22.352f; //meters per second (50mph)
+    public float maxSpeed = 11.176f; //25mph
     public Vector3 forward = new Vector3(1f, 0f, 1f);
     public AudioClip bounceSound;
 
@@ -28,12 +29,14 @@ public class SuperballBehavior : MonoBehaviour
     private int xZeroVelocityCount, yZeroVelocityCount, zZeroVelocityCount;
     private int collisionID;
     private int points = 100;
-    private int currentFibonacci;
+    private int currentVelocityIncrement;
 
-    private float maxObjectDeviation = 20f; //in degrees
-    private float velocityThreshold = 10f; //if velocity.magnitude < velocityThreshold, gravity is on
+    private float gravityActivationThreshold = 5f;
     private float previousMagnitude;
-    private float[] fibonacciIncrement = { 0.1f, 0.1f, 0.2f, 0.3f, 0.5f, 0.8f, 1.3f };
+    //decreasing increment. Ignoring Fibonacci, using 
+    private float[] oldIncrement1 = { 0.1f, 0.1f, 0.2f, 0.3f, 0.5f, 0.8f, 1.3f };
+    //idea: f(x) = f(x-2)/2 + f(x-1)
+    private float[] newIncrement1 = { 0.1f, 0.1f, 0.15f, 0.2f, 0.275f, 0.375f, 0.65f };
     private float accumulatedTime;
 
     private Vector3 lastCollisionLocation, nextCollisionLocation, currentDirection;
@@ -57,7 +60,7 @@ public class SuperballBehavior : MonoBehaviour
         rBody = this.GetComponent<Rigidbody>();
 
         GameObject.Find("RoomCamera").GetComponent<Camera>().enabled = false;
-        currentFibonacci = 0;
+        currentVelocityIncrement = 0;
         isLastObjectBreakable = true;
         isCurrentObjectBreakable = true;
         liveStateOverridesFallingCheck = false;
@@ -68,7 +71,7 @@ public class SuperballBehavior : MonoBehaviour
         collisionFolder = Instantiate(emptyGameObject, emptyGameObject.transform.position, Quaternion.identity) as GameObject;
         collisionFolder.name = "CollisionFolder";
         collisionID = 0;
-
+        
     }
 
     // Update is called once per frame
@@ -105,7 +108,7 @@ public class SuperballBehavior : MonoBehaviour
         isCurrentObjectBreakable = true;
         liveStateOverridesFallingCheck = false;
         accumulatedTime = 0f;
-        currentFibonacci = 0;
+        currentVelocityIncrement = 0;
     }
 
     void BallAtRest()
@@ -148,16 +151,21 @@ public class SuperballBehavior : MonoBehaviour
         if (ballState != SuperBallState.LIVE && ballState != SuperBallState.FALLING)
             return;
         Debug.DrawLine(rBody.position, lastCollisionLocation, Color.yellow, 480f);
-        
-        for(int i = 0; i < other.contacts.Length; i++)
+
+        CreateNewCollisionPoint(other);
+
+        lastCollisionLocation = this.transform.position;
+    }
+
+    private void CreateNewCollisionPoint(Collision other)
+    {
+        for (int i = 0; i < other.contacts.Length; i++)
         {
             ContactPoint contactPoint = other.contacts[i];
             GameObject nextPoint = Instantiate(emptyGameObject, contactPoint.point, Quaternion.identity) as GameObject;
             nextPoint.name = collisionID.ToString() + "-" + i.ToString();
             nextPoint.transform.parent = collisionFolder.transform;
         }
-
-        lastCollisionLocation = this.transform.position;
         collisionID++;
 
     }
@@ -166,8 +174,6 @@ public class SuperballBehavior : MonoBehaviour
     {
         if (ballState != SuperBallState.LIVE && ballState != SuperBallState.FALLING)
             return;
-
-        //CheckForVelocityDampening();
 
         previousMagnitude = rBody.velocity.magnitude;
         Debug.DrawLine(rBody.position, lastCollisionLocation, Color.yellow, 480f);
@@ -188,36 +194,36 @@ public class SuperballBehavior : MonoBehaviour
             Debug.Log("Error calculating next collision!");
         }
 
-        isLastObjectBreakable = isCurrentObjectBreakable;
-        isCurrentObjectBreakable = other.gameObject.GetComponent<MirrorBehavior>() != null ? true : false;
+        AdjustBallVelocity(other);
 
-
-        if (isLastObjectBreakable != isCurrentObjectBreakable)
-        {
-            currentFibonacci = 0;
-        }
-        else
-        {
-            if (currentFibonacci < fibonacciIncrement.Length - 1)
-                currentFibonacci++;
-        }
-        if (isCurrentObjectBreakable)
-            HandleBreakableObjectCollision(fibonacciIncrement[currentFibonacci], other);
-        else
-            HandleUnbreakableObjectCollision(-fibonacciIncrement[currentFibonacci], other);
-
-        //CheckForVelocityDampening();
-
-        if(rBody.velocity.magnitude < velocityThreshold)
+        if(rBody.velocity.magnitude < gravityActivationThreshold)
         {
             print("Below threshold!");
         }
-        if(rBody.velocity.magnitude < velocityThreshold && !liveStateOverridesFallingCheck && ballState != SuperBallState.FALLING)
+        if(FallingStateIsTriggered())
         {
             Debug.Log("Now entering the FALLEN state: " + rBody.velocity);
-            ballState = SuperBallState.FALLING;
-            rBody.useGravity = true;
+            SwitchToFallingState();
         }
+    }
+
+    private void AdjustBallVelocity(Collision col)
+    {
+        isLastObjectBreakable = isCurrentObjectBreakable;
+        isCurrentObjectBreakable = col.gameObject.GetComponent<MirrorBehavior>() != null ? true : false;
+        if (isLastObjectBreakable != isCurrentObjectBreakable)
+        {
+            currentVelocityIncrement = 0;
+        }
+        else
+        {
+            if (currentVelocityIncrement < newIncrement1.Length - 1)
+                currentVelocityIncrement++;
+        }
+        if (isCurrentObjectBreakable)
+            HandleBreakableObjectCollision(newIncrement1[currentVelocityIncrement], col);
+        else
+            HandleUnbreakableObjectCollision(-newIncrement1[currentVelocityIncrement], col);
     }
 
     private void HandleBreakableObjectCollision(float increment, Collision collision)
@@ -241,7 +247,7 @@ public class SuperballBehavior : MonoBehaviour
             rBody.useGravity = false;
             Debug.Log("Exiting FALLEN state, reentering LIVE state!");
             liveStateOverridesFallingCheck = true;
-            //the velocity might be < velocityThreshold and the state could reset to FALLING
+            //the velocity might be < gravityActivationThreshold and the state could reset to FALLING
             //this boolean allows us to override that.
         }
     }
@@ -267,13 +273,25 @@ public class SuperballBehavior : MonoBehaviour
         }
     }
 
-    //NOTE: dampening the speed means the velocity must move to 0.0f
-    //      but in a 3d coordinate system the velocity's components
-    //      could be positive or negative. So I have to keep track of that.
     private void IncrementVelocityFixed(float fixedAmount)
     {
         rBody.velocity = rBody.velocity.normalized * (rBody.velocity.magnitude + fixedAmount);
     }
+
+    private bool FallingStateIsTriggered()
+    {
+        return (rBody.velocity.magnitude < gravityActivationThreshold &&
+                !liveStateOverridesFallingCheck &&
+                ballState != SuperBallState.FALLING);
+    }
+
+    private void SwitchToFallingState()
+    {
+        ballState = SuperBallState.FALLING;
+        rBody.useGravity = true;
+    }
+
+
 
     /*
      * 
@@ -290,12 +308,12 @@ public class SuperballBehavior : MonoBehaviour
 
     private void CheckForVelocityDampening()
     {
-        if (Mathf.Abs(previousMagnitude - rBody.velocity.magnitude) > fibonacciIncrement[currentFibonacci] + 0.2f)
+        if (Mathf.Abs(previousMagnitude - rBody.velocity.magnitude) > newIncrement1[currentVelocityIncrement] + 0.2f)
         {
 #if UNITY_EDITOR
             Debug.Log("Change in magnitude: " + Mathf.Abs(previousMagnitude -
                 rBody.velocity.magnitude) + "\n" + "current fibonacci " +
-                "increment: " + fibonacciIncrement[currentFibonacci]);
+                "increment: " + newIncrement1[currentVelocityIncrement]);
             UnityEditor.EditorApplication.isPaused = true;
 #endif
         }

@@ -25,7 +25,6 @@ public class BallBounceSound : MonoBehaviour {
     {
         source.pitch = Random.Range(lowPitchRange, highPitchRange);
         float hitVol = col.relativeVelocity.magnitude * velocityToVolume;
-        print("gameobject type: " + col.gameObject.tag + " ; hitVol: " + hitVol);
         if (col.gameObject.CompareTag(breakable)) //is it breakable
         {
             source.PlayOneShot(bounceAgainstPlate, hitVol);
