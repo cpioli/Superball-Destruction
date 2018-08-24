@@ -54,6 +54,7 @@ public class GameHUDBehavior : MonoBehaviour, IGameHUDEvent {
 
     public void UpdateScore(int newScore)
     {
+        //print("Receiving " + newScore + " and updating score!");
         CurrentScore.text = newScore.ToString();
     }
 

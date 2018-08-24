@@ -37,7 +37,7 @@ public class SuperballBehavior : MonoBehaviour
     private float[] oldIncrement1 = { 0.1f, 0.1f, 0.2f, 0.3f, 0.5f, 0.8f, 1.3f };
     //idea: f(x) = f(x-2)/2 + f(x-1)
     private float[] newIncrement1 = { 0.1f, 0.1f, 0.15f, 0.2f, 0.275f, 0.375f, 0.65f };
-    private float accumulatedTime;
+    private float accumFloorDur;
 
     private Vector3 lastCollisionLocation, nextCollisionLocation, currentDirection;
     private GameObject nextCollisionObject, CannonBarrel;
@@ -65,7 +65,7 @@ public class SuperballBehavior : MonoBehaviour
         isCurrentObjectBreakable = true;
         liveStateOverridesFallingCheck = false;
 
-        accumulatedTime = 0f;
+        accumFloorDur = 0f;
 
         emptyGameObject = GameObject.Find("CollisionPoints");
         collisionFolder = Instantiate(emptyGameObject, emptyGameObject.transform.position, Quaternion.identity) as GameObject;
@@ -107,7 +107,7 @@ public class SuperballBehavior : MonoBehaviour
         isLastObjectBreakable = true;
         isCurrentObjectBreakable = true;
         liveStateOverridesFallingCheck = false;
-        accumulatedTime = 0f;
+        accumFloorDur = 0f;
         currentVelocityIncrement = 0;
     }
 
@@ -126,18 +126,19 @@ public class SuperballBehavior : MonoBehaviour
         ballState = SuperBallState.LIVE;
         rBody.AddForce(CannonBarrel.transform.up.normalized * velocity, ForceMode.Impulse);
         lastCollisionLocation = this.transform.position;
+        print("Current ball velocity: " + rBody.velocity.magnitude);
     }
 
     void XZVelocityDecay()
     {
         if (Mathf.Abs(rBody.velocity.y) >= 0.1f) return;
 
-        accumulatedTime += Time.deltaTime;
-        print(accumulatedTime);
-        Mathf.Lerp(rBody.velocity.x, 0f, accumulatedTime);
-        Mathf.Lerp(rBody.velocity.z, 0f, accumulatedTime);
+        accumFloorDur += Time.deltaTime;
+        print(accumFloorDur);
+        Mathf.Lerp(rBody.velocity.x, 0f, accumFloorDur);
+        Mathf.Lerp(rBody.velocity.z, 0f, accumFloorDur);
 
-        if(accumulatedTime >= 1.0f) //alternatively use if(rBody.velocity.x == 0f) or if(rBody.velocity.z == 0f)
+        if(accumFloorDur >= 1.0f) //alternatively use if(rBody.velocity.x == 0f) or if(rBody.velocity.z == 0f)
         {
             ballState = SuperBallState.DEAD;
             rBody.velocity = Vector3.zero;
@@ -235,7 +236,14 @@ public class SuperballBehavior : MonoBehaviour
             this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude +
             " vector: " + GetComponent<Rigidbody>().velocity.ToString());
 
-        this.IncrementVelocityFixed(increment);
+        if(rBody.velocity.magnitude < maxSpeed)
+        {
+            this.IncrementVelocityFixed(increment);
+        }
+        else if(rBody.velocity.magnitude + increment > maxSpeed)
+        {
+            this.IncrementVelocityFixed(maxSpeed - rBody.velocity.magnitude);
+        }
 
         Debug.Log("New adjusted stats: " + this.name + "'s speed: " + 
             this.GetComponent<Rigidbody>().velocity.magnitude + " vector: " +

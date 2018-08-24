@@ -6,9 +6,9 @@ public class SuperballAI : MonoBehaviour {
 
     public float fieldOfView;
     public float maxMoveInDegrees;
+    public float radius;
 
-    private float radius;
-    private float debugLineDuration = 3f;
+    private float debugLineDuration = 15f;
     private Vector3 location, newDirection;
     private Collider[] colliders;
     private RaycastHit hitInfo;

@@ -15,7 +15,6 @@ public class CameraAI : MonoBehaviour, ISuperballInstantiatedEvent {
 	// Update is called once per frame
 	void LateUpdate () {
         if (!ballBehaviorTrackable) return;
-        print("ball state should be LIVE. It's currently: " + sbBehavior.ballState);
         if(sbBehavior.ballState == SuperballBehavior.SuperBallState.LIVE
             || sbBehavior.ballState == SuperballBehavior.SuperBallState.FALLING)
             transform.LookAt(ball.transform.position);
@@ -24,7 +23,7 @@ public class CameraAI : MonoBehaviour, ISuperballInstantiatedEvent {
     public void SuperballIsBuilt()
     {
         ball = GameObject.Find("Sphere");
-        sbBehavior = ball.GetComponent<SuperballBehavior>() ;
+        sbBehavior = GameObject.Find("Sphere").GetComponent<SuperballBehavior>() ;
         ballBehaviorTrackable = true;
     }
 

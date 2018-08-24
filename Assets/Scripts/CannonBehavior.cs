@@ -90,7 +90,6 @@ public class CannonBehavior : MonoBehaviour, ISuperballInstantiatedEvent {
     //only runs if the ball is in the ATREST state
     void UpdateControls()
     {
-        print("update controls");
         float currentSpeed = translationSpeed;
         bool goFaster = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         if (goFaster) currentSpeed += shift;
