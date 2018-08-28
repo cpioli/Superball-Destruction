@@ -18,7 +18,7 @@ public class SuperballBehavior : MonoBehaviour
 
     public float velocity = 1.0f;
     //public float maxSpeed = 22.352f; //meters per second (50mph)
-    public float maxSpeed = 11.176f; //25mph
+    private float maxSpeed = 11.176f; //25mph
     public Vector3 forward = new Vector3(1f, 0f, 1f);
     public AudioClip bounceSound;
 
@@ -31,7 +31,7 @@ public class SuperballBehavior : MonoBehaviour
     private int points = 100;
     private int currentVelocityIncrement;
 
-    private float gravityActivationThreshold = 5f;
+    private float gravityActivationThreshold = 7.5f;
     private float previousMagnitude;
     //decreasing increment. Ignoring Fibonacci, using 
     private float[] oldIncrement1 = { 0.1f, 0.1f, 0.2f, 0.3f, 0.5f, 0.8f, 1.3f };
@@ -124,7 +124,7 @@ public class SuperballBehavior : MonoBehaviour
         ExecuteEvents.Execute<IGameEventHandler>(GameObject.Find("GameManager"), null, (x, y) => x.FiredCannon());
         print("Adding force!");
         ballState = SuperBallState.LIVE;
-        rBody.AddForce(CannonBarrel.transform.up.normalized * velocity, ForceMode.Impulse);
+        rBody.AddForce(CannonBarrel.transform.up.normalized * velocity * 0.6f, ForceMode.Impulse);
         lastCollisionLocation = this.transform.position;
         print("Current ball velocity: " + rBody.velocity.magnitude);
     }
@@ -236,20 +236,7 @@ public class SuperballBehavior : MonoBehaviour
             this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude +
             " vector: " + GetComponent<Rigidbody>().velocity.ToString());
 
-        if(rBody.velocity.magnitude < maxSpeed)
-        {
-            this.IncrementVelocityFixed(increment);
-        }
-        else if(rBody.velocity.magnitude + increment > maxSpeed)
-        {
-            this.IncrementVelocityFixed(maxSpeed - rBody.velocity.magnitude);
-        }
-
-        Debug.Log("New adjusted stats: " + this.name + "'s speed: " + 
-            this.GetComponent<Rigidbody>().velocity.magnitude + " vector: " +
-            GetComponent<Rigidbody>().velocity.ToString());
-
-        if(ballState == SuperBallState.FALLING)
+        if (ballState == SuperBallState.FALLING)
         {
             ballState = SuperBallState.LIVE;
             rBody.useGravity = false;
@@ -258,6 +245,27 @@ public class SuperballBehavior : MonoBehaviour
             //the velocity might be < gravityActivationThreshold and the state could reset to FALLING
             //this boolean allows us to override that.
         }
+
+        if (rBody.velocity.magnitude < maxSpeed)
+        {
+            print("increasing speed! Magnitude: " + rBody.velocity.magnitude + " maxSpeed: " + maxSpeed);
+            this.IncrementVelocityFixed(increment);
+        }
+        else if (rBody.velocity.magnitude >= maxSpeed)
+        {
+            Debug.Log("Speed is unchanged");
+            return;
+        }
+        else if(rBody.velocity.magnitude + increment > maxSpeed)
+        { 
+            Debug.Log("Capping velocity");
+            Debug.Log("magnitude: " + rBody.velocity.magnitude);
+            this.IncrementVelocityFixed(maxSpeed - rBody.velocity.magnitude);
+        }
+
+        Debug.Log("New adjusted stats: " + this.name + "'s speed: " + 
+            this.GetComponent<Rigidbody>().velocity.magnitude + " vector: " +
+            GetComponent<Rigidbody>().velocity.ToString());
     }
 
     private void HandleUnbreakableObjectCollision(float decrement, Collision collision)
