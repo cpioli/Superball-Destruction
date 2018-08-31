@@ -9,6 +9,7 @@ public class UIStartup : MonoBehaviour {
     public Canvas PauseMenu;
     public Canvas PointsTally;
     public Canvas HighScores;
+    public Canvas HowToPlay;
 
     void Awake()
     {
@@ -17,6 +18,7 @@ public class UIStartup : MonoBehaviour {
         PauseMenu.gameObject.SetActive(false);
         PointsTally.gameObject.SetActive(false);
         HighScores.gameObject.SetActive(false);
+        HowToPlay.gameObject.SetActive(false);
     }
 
     
