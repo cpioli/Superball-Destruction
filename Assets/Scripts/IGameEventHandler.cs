@@ -25,6 +25,7 @@ public interface IGameEventHandler : IEventSystemHandler {
     void GameQuit();
     void GameIsOver();
     void CheckHighScoreScreen();
+    void SeeInstructions();
     void ReturnToStartMenu();
 
     void UpdateScore(int addition, bool isBreakable);

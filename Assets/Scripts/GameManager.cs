@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     public Canvas PauseMenu;
     public Canvas PointsTally;
     public Canvas HighScores;
+    public Canvas Instructions;
 
     public Camera StartMenuCamera;
     public Camera CannonCamera;
@@ -224,13 +225,27 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
 
     }
 
+    public void SeeInstructions()
+    {
+        StartMenu.gameObject.SetActive(false);
+        Instructions.gameObject.SetActive(true);
+        
+    }
+
     //triggered by: "Clicking to Continue" in high score menu after game over
     public void ReturnToStartMenu()
     {
         //code to teardown the PointsTally screen.
         //this block will be moved to CheckHighScoreScreen once it's implemented
-        PointsTally.GetComponent<PointsTallyBehavior>().Disassemble();
-        PointsTally.gameObject.SetActive(false);
+        if(PointsTally.isActiveAndEnabled)
+        {
+            PointsTally.GetComponent<PointsTallyBehavior>().Disassemble();
+            PointsTally.gameObject.SetActive(false);
+        }
+        else if (Instructions.isActiveAndEnabled)
+        {
+            Instructions.gameObject.SetActive(false);
+        }
         StartMenu.gameObject.SetActive(true);
     }
     
