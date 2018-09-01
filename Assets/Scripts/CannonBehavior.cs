@@ -5,23 +5,24 @@ using UnityEngine.EventSystems;
 
 public class CannonBehavior : MonoBehaviour, ISuperballInstantiatedEvent {
 
+    private bool ballBehaviorTrackable;
+    private SphereCollider sphereCollider;
+    private RaycastHit hitInfo;
+    private SuperballBehavior sbBehavior;
+    private GameManager gameManager;
+    private ArrowsBehavior arrowsBehavior;
+
     public float translationSpeed = .025f;
     public float shift = 80f;
     public float rotationSpeed = 0.5f;
-    GameObject camObject;
-
     public float sensitivityX = 15F;
     public float sensitivityY = 15F;
-
     public float minimumX = -360F;
     public float maximumX = 360F;
-
     public float minimumY = -60F;
     public float maximumY = 60F;
-
     float rotationX = 0F;
     float rotationY = 0F;
-
     private List<float> rotArrayX = new List<float>();
     float rotAverageX = 0F;
     private List<float> rotArrayY = new List<float>();
@@ -36,16 +37,8 @@ public class CannonBehavior : MonoBehaviour, ISuperballInstantiatedEvent {
     public GameObject RicochetArrows;
     public GameObject CannonBarrel;
 
-    private bool ballBehaviorTrackable;
-    private SphereCollider sphereCollider;
-    private RaycastHit hitInfo;
-    private SuperballBehavior sbBehavior;
-    private GameManager gameManager;
-    private ArrowsBehavior arrowsBehavior;
-
     // Use this for initialization
     void Start () {
-        camObject = GameObject.Find("Main Camera");
 
         //https://forum.unity.com/threads/simple-first-person-camera-script.417611/
         //        Rigidbody rb = GetComponent<Rigidbody>();
