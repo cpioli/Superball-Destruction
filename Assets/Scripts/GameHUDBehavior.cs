@@ -61,6 +61,6 @@ public class GameHUDBehavior : MonoBehaviour, IGameHUDEvent {
     public void UpdateSpeed(float metersPerSecond)
     {
         float milesPerHour = metersPerSecond * mpsToMPH;
-        BallSpeed.text = string.Format("##.# mph", milesPerHour);
+        BallSpeed.text = string.Format("{0:##.#} mph", milesPerHour);
     }
 }

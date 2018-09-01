@@ -225,6 +225,10 @@ public class SuperballBehavior : MonoBehaviour
             HandleBreakableObjectCollision(newIncrement1[currentVelocityIncrement], col);
         else
             HandleUnbreakableObjectCollision(-newIncrement1[currentVelocityIncrement], col);
+
+        ExecuteEvents.Execute<IGameHUDEvent>(
+            GameObject.Find("InGame"),
+            null, (x, y) => x.UpdateSpeed(rBody.velocity.magnitude));
     }
 
     private void HandleBreakableObjectCollision(float increment, Collision collision)
