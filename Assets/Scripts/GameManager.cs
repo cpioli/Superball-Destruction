@@ -67,6 +67,7 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
                 break;
 
             case GameState.INPLAY:
+                CheckForPause();
                 break;
 
             case GameState.PAUSED:
@@ -76,6 +77,14 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
                 break;
         }
 	}
+
+    private void CheckForPause()
+    {
+        if (Input.GetKeyUp(KeyCode.Escape))
+        {
+            GameIsPaused();
+        }
+    }
 
     //triggered by: clicking on BeginGame in the Start Menu
     //TODO: turn on music

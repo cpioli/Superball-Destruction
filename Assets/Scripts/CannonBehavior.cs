@@ -66,7 +66,7 @@ public class CannonBehavior : MonoBehaviour, ISuperballInstantiatedEvent {
     }
 
     // Update is called once per frame
-    void Update () {
+    void LateUpdate () {
         if (!ballBehaviorTrackable) return;
 
         if (sbBehavior.ballState == SuperballBehavior.SuperBallState.ATREST)
