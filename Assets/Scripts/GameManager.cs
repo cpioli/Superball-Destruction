@@ -89,7 +89,6 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
         LoadBall();
         SetupCameraAndUI();
         SetCannonToActiveState();
-
         RestoreBrokenItems();
     }
 
@@ -107,6 +106,7 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
         Sphere.transform.localPosition = sphereStartPos;
 
     }
+
     private void SetupCameraAndUI() //can also add the Pause Menu screen here
     {
         StartMenuCamera.GetComponent<Camera>().enabled = false;
@@ -183,6 +183,7 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
         currentGameState = GameState.PAUSED;
         GameHUD.gameObject.SetActive(false);
         PauseMenu.gameObject.SetActive(true);
+        Time.timeScale = 0f;
     }
 
     //triggered by: button input or keyboard input
@@ -192,8 +193,9 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     public void GameIsResumed()
     {
         currentGameState = GameState.INPLAY;
-        StartMenu.gameObject.SetActive(true);
+        GameHUD.gameObject.SetActive(true);
         PauseMenu.gameObject.SetActive(false);
+        Time.timeScale = 1.0f;
     }
 
     //triggered by: button input
@@ -202,7 +204,20 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
     //                currentGameState == GameState.STARTMENU
     public void GameQuit()
     {
-        
+        RoomCamera.GetComponent<Camera>().enabled = false;
+        StartMenuCamera.GetComponent<Camera>().enabled = true;
+        root.worldCamera = StartMenuCamera;
+        currentGameState = GameState.STARTMENU;
+        Time.timeScale = 1.0f;
+        //check if cannon is active
+        if (Cannon.activeInHierarchy)
+        {
+            Cannon.gameObject.SetActive(false);
+        }
+        if(Arrows.activeInHierarchy)
+        {
+            Arrows.gameObject.SetActive(false);
+        }
     }
 
     //triggered by: SuperballBehavior.ballState.DEAD and XZDegradation method
@@ -232,7 +247,6 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
         
     }
 
-    //triggered by: "Clicking to Continue" in high score menu after game over
     public void ReturnToStartMenu()
     {
         //code to teardown the PointsTally screen.
