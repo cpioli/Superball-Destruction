@@ -113,7 +113,7 @@ public class SuperballBehavior : MonoBehaviour
 
     void BallAtRest()
     {
-        if (!Input.GetMouseButtonUp(0))
+        if (!Input.GetKeyUp(KeyCode.Space))
             return;
 
         LaunchBall();

@@ -39,7 +39,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4777941771642504}
-  - component: {fileID: 114512492810127582}
+  - component: {fileID: 114510366040277770}
   m_Layer: 0
   m_Name: Ball Cannon
   m_TagString: Untagged
@@ -5053,7 +5053,7 @@ MonoBehaviour:
   m_selectedFaces: 
   m_SelectedEdges: []
   m_selectedTriangles: 
---- !u!114 &114512492810127582
+--- !u!114 &114510366040277770
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -5061,11 +5061,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1449923563269780}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0924cc2012c1d224980c2f62287f412c, type: 3}
+  m_Script: {fileID: 11500000, guid: 637bb70be4de3ac499e8ef557f7d7d7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   translationSpeed: 0.025
-  shift: 0.05
+  shift: 80
   rotationSpeed: 0.5
   sensitivityX: 15
   sensitivityY: 15
@@ -5074,9 +5074,9 @@ MonoBehaviour:
   minimumY: -60
   maximumY: 60
   frameCounter: 20
+  isCannonMovable: 0
   RicochetArrows: {fileID: 0}
   CannonBarrel: {fileID: 1423119553815232}
-  isCannonMovable: 0
 --- !u!114 &114602878476543760
 MonoBehaviour:
   m_ObjectHideFlags: 1

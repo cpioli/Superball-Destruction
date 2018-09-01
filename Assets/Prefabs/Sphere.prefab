@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 13561044}
   - component: {fileID: 11441130}
   - component: {fileID: 114739965156388854}
-  - component: {fileID: 114487444660767238}
+  - component: {fileID: 114895534479007734}
   - component: {fileID: 82020070117827714}
   m_Layer: 8
   m_Name: Sphere
@@ -106,7 +106,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ballState: 0
   velocity: 12.06
-  maxSpeed: 22.352
   forward: {x: 1.27, y: -2.25, z: 2.55}
   bounceSound: {fileID: 0}
 --- !u!135 &13561044
@@ -252,20 +251,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &114487444660767238
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 146880}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3637249d611c26347be190272ecbea5a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  bounceAgainstTable: {fileID: 8300000, guid: 52a65c6867da3564da301b26881ffa18, type: 3}
-  bounceAgainstPlate: {fileID: 8300000, guid: 36001746e3a4905429bf1c576a823bc1, type: 3}
-  bounceAgainstWalls: {fileID: 8300000, guid: 9fc186a167c531e418c6da791b5e70d5, type: 3}
 --- !u!114 &114739965156388854
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -280,3 +265,17 @@ MonoBehaviour:
   fieldOfView: 25
   maxMoveInDegrees: 25
   radius: 6
+--- !u!114 &114895534479007734
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 146880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6068e75624a7fc4dbd3898cd840bcfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bounceAgainstTable: {fileID: 8300000, guid: 52a65c6867da3564da301b26881ffa18, type: 3}
+  bounceAgainstPlate: {fileID: 8300000, guid: 4e0680f7729e91343ac60ed73630c649, type: 3}
+  bounceAgainstWalls: {fileID: 8300000, guid: 494f0843ec9f387478fefb7907bf2b1f, type: 3}
