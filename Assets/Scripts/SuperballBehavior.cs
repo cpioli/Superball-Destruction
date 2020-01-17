@@ -32,12 +32,11 @@ public class SuperballBehavior : MonoBehaviour
     private float maxSpeed = 11.176f; //25mph
     private float gravityActivationThreshold = 7.5f;
     private float previousMagnitude;
-    private float[] oldIncrement1 = { 0.1f, 0.1f, 0.2f, 0.3f, 0.5f, 0.8f, 1.3f };
-    private float[] newIncrement1 = { 0.1f, 0.1f, 0.15f, 0.2f, 0.275f, 0.375f, 0.65f };
+    private float[] velocityIncrement = { 0.1f, 0.1f, 0.15f, 0.2f, 0.275f, 0.375f, 0.65f };
     private float accumFloorDur;
 
     private Vector3 lastCollisionLocation, currentDirection;
-    private GameObject nextCollisionObject, CannonBarrel;
+    private GameObject CannonBarrel;
     private GameObject emptyGameObject;
     private GameObject collisionFolder;
     private Rigidbody rBody;
@@ -183,7 +182,7 @@ public class SuperballBehavior : MonoBehaviour
         RaycastHit hitInfo;
         if (Physics.Raycast(ray, out hitInfo, 30f, collisionLayer)) //collisions is layer 8, so 1 << 8 is necessary
         {
-            nextCollisionObject = hitInfo.collider.gameObject;
+            //nextCollisionObject = hitInfo.collider.gameObject;
         }
         else //Physics.Raycast returns "false"
         {
@@ -213,13 +212,13 @@ public class SuperballBehavior : MonoBehaviour
         }
         else
         {
-            if (currentVelocityIncrement < newIncrement1.Length - 1)
+            if (currentVelocityIncrement < velocityIncrement.Length - 1)
                 currentVelocityIncrement++;
         }
         if (isCurrentObjectBreakable)
-            HandleBreakableObjectCollision(newIncrement1[currentVelocityIncrement], col);
+            HandleBreakableObjectCollision(velocityIncrement[currentVelocityIncrement], col);
         else
-            HandleUnbreakableObjectCollision(-newIncrement1[currentVelocityIncrement], col);
+            HandleUnbreakableObjectCollision(-velocityIncrement[currentVelocityIncrement], col);
 
         ExecuteEvents.Execute<IGameHUDEvent>(
             GameObject.Find("InGame"),
@@ -230,10 +229,10 @@ public class SuperballBehavior : MonoBehaviour
     {
         ExecuteEvents.Execute<IGameEventHandler>(GameObject.Find("GameManager"), null, (x, y) => x.UpdateScore(points, isCurrentObjectBreakable));
 
-        Debug.Log((collisionID-1).ToString() + " BREAKABLE Object! At Position " + lastCollisionLocation +
+        /*Debug.Log((collisionID-1).ToString() + " BREAKABLE Object! At Position " + lastCollisionLocation +
             " Against object " + collision.transform.gameObject.name + "\n" +
             this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude +
-            " vector: " + GetComponent<Rigidbody>().velocity.ToString());
+            " vector: " + GetComponent<Rigidbody>().velocity.ToString());*/
 
         if (ballState == SuperBallState.FALLING)
         {
@@ -247,43 +246,43 @@ public class SuperballBehavior : MonoBehaviour
 
         if (rBody.velocity.magnitude < maxSpeed)
         {
-            print("increasing speed! Magnitude: " + rBody.velocity.magnitude + " maxSpeed: " + maxSpeed);
+            //print("increasing speed! Magnitude: " + rBody.velocity.magnitude + " maxSpeed: " + maxSpeed);
             this.IncrementVelocityFixed(increment);
         }
         else if (rBody.velocity.magnitude >= maxSpeed)
         {
-            Debug.Log("Speed is unchanged");
+            //Debug.Log("Speed is unchanged");
             return;
         }
         else if(rBody.velocity.magnitude + increment > maxSpeed)
         { 
-            Debug.Log("Capping velocity");
-            Debug.Log("magnitude: " + rBody.velocity.magnitude);
+            //Debug.Log("Capping velocity");
+           // Debug.Log("magnitude: " + rBody.velocity.magnitude);
             this.IncrementVelocityFixed(maxSpeed - rBody.velocity.magnitude);
         }
 
-        Debug.Log("New adjusted stats: " + this.name + "'s speed: " + 
+        /*Debug.Log("New adjusted stats: " + this.name + "'s speed: " + 
             this.GetComponent<Rigidbody>().velocity.magnitude + " vector: " +
-            GetComponent<Rigidbody>().velocity.ToString());
+            GetComponent<Rigidbody>().velocity.ToString());*/
     }
 
     private void HandleUnbreakableObjectCollision(float decrement, Collision collision)
     {
-        Debug.Log((collisionID - 1).ToString() + " SOLID Object! At Position " + lastCollisionLocation +
+        /*Debug.Log((collisionID - 1).ToString() + " SOLID Object! At Position " + lastCollisionLocation +
             " Against object " + collision.transform.gameObject.name + "\n" +
             this.name + "'s speed: " + this.GetComponent<Rigidbody>().velocity.magnitude +
-            " vector: " + GetComponent<Rigidbody>().velocity.ToString());
+            " vector: " + GetComponent<Rigidbody>().velocity.ToString());*/
 
         this.IncrementVelocityFixed(decrement);
 
-        Debug.Log("New adjusted stats: " + this.name + "'s speed: " +
+        /*Debug.Log("New adjusted stats: " + this.name + "'s speed: " +
             this.GetComponent<Rigidbody>().velocity.magnitude + " vector: " +
-            GetComponent<Rigidbody>().velocity.ToString());
+            GetComponent<Rigidbody>().velocity.ToString());*/
 
         if(ballState == SuperBallState.LIVE && liveStateOverridesFallingCheck)
         {
             liveStateOverridesFallingCheck = false; //switch this back off so gravity can reactivate
-            Debug.Log("Killing Falling state override");
+            //Debug.Log("Killing Falling state override");
 
         }
     }
@@ -307,13 +306,10 @@ public class SuperballBehavior : MonoBehaviour
     }
 
 
-
+    #region DebuggingTools
     /*
-     * 
      *                      DEBUGGING METHODS
-     * 
      */
-
     //Checks to see if the superball has gone past the objecct whose collision
     //was predicted by our trajectory calculations in OnCollisionExit()
     private bool ObjectPassedCollision()
@@ -323,12 +319,12 @@ public class SuperballBehavior : MonoBehaviour
 
     private void CheckForVelocityDampening()
     {
-        if (Mathf.Abs(previousMagnitude - rBody.velocity.magnitude) > newIncrement1[currentVelocityIncrement] + 0.2f)
+        if (Mathf.Abs(previousMagnitude - rBody.velocity.magnitude) > velocityIncrement[currentVelocityIncrement] + 0.2f)
         {
 #if UNITY_EDITOR
             Debug.Log("Change in magnitude: " + Mathf.Abs(previousMagnitude -
                 rBody.velocity.magnitude) + "\n" + "current fibonacci " +
-                "increment: " + newIncrement1[currentVelocityIncrement]);
+                "increment: " + velocityIncrement[currentVelocityIncrement]);
             UnityEditor.EditorApplication.isPaused = true;
 #endif
         }
@@ -379,4 +375,5 @@ public class SuperballBehavior : MonoBehaviour
         }
 
     }
+    #endregion
 }
