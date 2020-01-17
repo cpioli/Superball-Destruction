@@ -8,14 +8,10 @@ public class ArrowsBehavior : MonoBehaviour, ISuperballInstantiatedEvent {
     public GameObject ricochetArrow;
 
     private bool ballTrackable;
-    private Vector3 aimArrowDirection, ricochetArrowDirection;
     private RaycastHit hitInfo;
     private SphereCollider sphereCollider;
 
-	// Use this for initialization
 	void Start () {
-        aimArrowDirection = Vector3.zero;
-        ricochetArrowDirection = Vector3.zero;
         ballTrackable = false;
     }
 
@@ -70,6 +66,7 @@ public class ArrowsBehavior : MonoBehaviour, ISuperballInstantiatedEvent {
         Debug.DrawRay(origin, rotation * Vector3.right, Color.yellow, 480f);
     }
 
+    #region ISuperballInstantiatedEventMethods
     public void SuperballIsBuilt()
     {
         sphereCollider = GameObject.Find("Sphere").GetComponent<SphereCollider>();
@@ -81,6 +78,6 @@ public class ArrowsBehavior : MonoBehaviour, ISuperballInstantiatedEvent {
     {
         ballTrackable = false;
     }
-
+    #endregion
 
 }

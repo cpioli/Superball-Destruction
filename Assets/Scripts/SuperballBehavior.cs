@@ -17,25 +17,22 @@ public class SuperballBehavior : MonoBehaviour
     public SuperBallState ballState;
 
     public float velocity = 1.0f;
-    //public float maxSpeed = 22.352f; //meters per second (50mph)
-    private float maxSpeed = 11.176f; //25mph
     public Vector3 forward = new Vector3(1f, 0f, 1f);
     public AudioClip bounceSound;
 
-    private bool hitBreakableObject;
     private bool isLastObjectBreakable, isCurrentObjectBreakable; //tracks if we increment or reduce fibonacci
     private bool liveStateOverridesFallingCheck;
+
     private int collisionLayer = 1 << 8;
     private int xZeroVelocityCount, yZeroVelocityCount, zZeroVelocityCount;
     private int collisionID;
     private int points = 100;
     private int currentVelocityIncrement;
 
+    private float maxSpeed = 11.176f; //25mph
     private float gravityActivationThreshold = 7.5f;
     private float previousMagnitude;
-    //decreasing increment. Ignoring Fibonacci, using 
     private float[] oldIncrement1 = { 0.1f, 0.1f, 0.2f, 0.3f, 0.5f, 0.8f, 1.3f };
-    //idea: f(x) = f(x-2)/2 + f(x-1)
     private float[] newIncrement1 = { 0.1f, 0.1f, 0.15f, 0.2f, 0.275f, 0.375f, 0.65f };
     private float accumFloorDur;
 
@@ -50,7 +47,6 @@ public class SuperballBehavior : MonoBehaviour
     {
         print("ball state is DEAD");
         ballState = SuperBallState.DEAD;
-        hitBreakableObject = false;
         xZeroVelocityCount = 0;
         yZeroVelocityCount = 0;
         zZeroVelocityCount = 0;

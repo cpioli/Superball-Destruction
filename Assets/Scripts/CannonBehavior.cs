@@ -9,9 +9,17 @@ public class CannonBehavior : MonoBehaviour, ISuperballInstantiatedEvent {
     private SphereCollider sphereCollider;
     private RaycastHit hitInfo;
     private SuperballBehavior sbBehavior;
-    private GameManager gameManager;
     private ArrowsBehavior arrowsBehavior;
+    private List<float> rotArrayX = new List<float>();
+    private List<float> rotArrayY = new List<float>();
 
+    float rotationX = 0F;
+    float rotationY = 0F;
+    float rotAverageX = 0F;
+    float rotAverageY = 0F;
+    Quaternion originalRotation;
+
+    public bool isCannonMovable;
     public float translationSpeed = .025f;
     public float shift = 80f;
     public float rotationSpeed = 0.5f;
@@ -21,31 +29,14 @@ public class CannonBehavior : MonoBehaviour, ISuperballInstantiatedEvent {
     public float maximumX = 360F;
     public float minimumY = -60F;
     public float maximumY = 60F;
-    float rotationX = 0F;
-    float rotationY = 0F;
-    private List<float> rotArrayX = new List<float>();
-    float rotAverageX = 0F;
-    private List<float> rotArrayY = new List<float>();
-    float rotAverageY = 0F;
-
     public float frameCounter = 20;
-
-    Quaternion originalRotation;
-
-    //reusable components to save memory.
-    public bool isCannonMovable;
     public GameObject RicochetArrows;
     public GameObject CannonBarrel;
 
     // Use this for initialization
     void Start () {
 
-        //https://forum.unity.com/threads/simple-first-person-camera-script.417611/
-        //        Rigidbody rb = GetComponent<Rigidbody>();
-        //        if (rb)
-        //            rb.freezeRotation = true;
         originalRotation = transform.localRotation;
-        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         arrowsBehavior = GameObject.Find("Arrows").GetComponent<ArrowsBehavior>();
         isCannonMovable = false;
         ballBehaviorTrackable = false;

@@ -5,7 +5,8 @@ using UnityEngine;
 public class SuperballAI : MonoBehaviour {
 
     public float fieldOfView;
-    public float maxMoveInDegrees;
+    //the maximum number of degrees the superball can adjust itself
+    public float maxMoveInDegrees; 
     public float radius;
 
     private float debugLineDuration = 15f;
@@ -31,7 +32,14 @@ public class SuperballAI : MonoBehaviour {
     }
 
     //This finds the nearest breakable object and stores it in superballAIData
-    //There is no guarantee the object will fall within the range of the superball's movement.
+    //The nearest breakable object is not determined by its distance from the 
+    //superball, but by the difference between its post-collision quaternion
+    //and the angle (ABC) formed by the superball's forward-vector (BA) and the
+    //line segment BC formed by the superball's position B and the next breakable
+    //object's position C
+
+    //There is no guarantee the nearest breakable object will fall within the
+    //range of the superball's "cone of movability"
     private void FindNearestBreakableObject()
     {
         superballAIData.newCollisionPos = Vector3.zero;
@@ -43,7 +51,7 @@ public class SuperballAI : MonoBehaviour {
         Collider colliderWithSmallestAngle = null;
         //1. collect all objects in range and in the collision layer
         colliders = Physics.OverlapSphere(location, 4f, 1 << 8);
-        if (colliders.Length == 0) { return; }
+        if (colliders.Length == 0) return;
             
         //2. measure the angle between the old and new
         for (int i = 0; i < colliders.Length; i++)
