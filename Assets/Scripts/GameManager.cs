@@ -33,11 +33,9 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
 
     private SuperballBehavior sbBehavior;
     private Transform ballCannonTransform;
-    private Transform ballTransform;
     private Vector3 sphereStartPos = new Vector3(0.0f, 0.033f, 0.0f);
     private int score;
     private int itemsBroken;
-    private bool lastObjectWasBreakable;
 
     private Stack<GameObject> destroyedObjects; //keep this to restart things
 
@@ -45,7 +43,6 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
         destroyedObjects = new Stack<GameObject>();
 
         ballCannonTransform = Cannon.transform;
-        ballTransform = Sphere.transform;
         Sphere = GameObject.Instantiate(this.Sphere, Cannon.transform, false);
         Sphere.gameObject.name = "Sphere";
         sbBehavior = Sphere.GetComponent<SuperballBehavior>();
@@ -94,7 +91,6 @@ public class GameManager : MonoBehaviour, IGameEventHandler {
         
         score = 0;
         itemsBroken = 0;
-        lastObjectWasBreakable = false;
         LoadBall();
         SetupCameraAndUI();
         SetCannonToActiveState();

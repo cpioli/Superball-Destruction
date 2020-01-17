@@ -2,7 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//A script to attach to a breakable object
+//When the ball made contact with an object containing this behavior, the ball
+//would stay in place and the player could reaim the ball to target an object.
+//This script has been deprecated and is no longer in use.
 public class ReaimingBehavior : MonoBehaviour {
+
+    private bool reaimingActive;
+    private Vector3 ballPosition, ballVelocity, origRoomCamPos;
+    private Quaternion origRoomCamAngle;
+    private GameObject roomCamera;
+    private Rigidbody superballRBody;
+    private SuperballBehavior sbBehavior;
+    private ArrowsBehavior arrowsBehavior;
 
     public float translationSpeed = .025f;
     public float shift = 0.05f;
@@ -20,6 +32,7 @@ public class ReaimingBehavior : MonoBehaviour {
 
     float rotationX = 0F;
     float rotationY = 0F;
+    //comment
      
     private List<float> rotArrayX = new List<float>();
     float rotAverageX = 0F;
@@ -31,22 +44,11 @@ public class ReaimingBehavior : MonoBehaviour {
 
     static Quaternion startingRotation;
 
-    private bool reaimingActive;
-    private float timeRemaining; //time left until the 
-    private Vector3 ballPosition, ballVelocity, origRoomCamPos;
-    private Quaternion origRoomCamAngle;
-    private GameObject roomCamera; 
-    private Rigidbody superballRBody;
-    private SuperballBehavior sbBehavior;
-    private ArrowsBehavior arrowsBehavior;
-
     public float timeUntilLaunch; //how long can they hold onto the ball before it launches?
 
-    // Use this for initialization
     void Start () {
 
         reaimingActive = false;
-        timeRemaining = 0f;
         ballPosition = Vector3.zero;
         roomCamera = GameObject.Find("RoomCamera");
         sbBehavior = GameObject.Find("Sphere").GetComponent<SuperballBehavior>();
@@ -54,7 +56,6 @@ public class ReaimingBehavior : MonoBehaviour {
         arrowsBehavior = GameObject.Find("Arrows").GetComponent<ArrowsBehavior>();
 	}
 	
-	// Update is called once per frame
 	void Update () {
         if (reaimingActive)
             UpdateAiming();

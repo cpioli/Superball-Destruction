@@ -10,8 +10,6 @@ public class ShatterSound : MonoBehaviour {
     private float lowPitchRange = .75f;
     private float highPitchRange = 1.5f;
     private float velocityToVolume = 0.2f;
-    private float velocityClipSplit = 10f;
-
 
     void Awake()
     {

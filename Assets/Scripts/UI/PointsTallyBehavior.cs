@@ -33,15 +33,11 @@ public class PointsTallyBehavior : MonoBehaviour {
     public Text ClickToContinue;
 
     private bool clickToContinueDisplayed;
-    private int totalScore;
-    private int objectsBroken;
     private const int LMB = 0;
     private const int RMB = 1;
 
     public void Start()
     {
-        totalScore = 0;
-        objectsBroken = 0;
         clickToContinueDisplayed = false;
     }
 

@@ -36,7 +36,7 @@ public class SuperballBehavior : MonoBehaviour
     private float[] newIncrement1 = { 0.1f, 0.1f, 0.15f, 0.2f, 0.275f, 0.375f, 0.65f };
     private float accumFloorDur;
 
-    private Vector3 lastCollisionLocation, nextCollisionLocation, currentDirection;
+    private Vector3 lastCollisionLocation, currentDirection;
     private GameObject nextCollisionObject, CannonBarrel;
     private GameObject emptyGameObject;
     private GameObject collisionFolder;
@@ -142,7 +142,7 @@ public class SuperballBehavior : MonoBehaviour
         }
     }
 
-    //USe this method to track issues you might have with collisions
+    //Use this method to track issues you might have with collisions
     void OnCollisionEnter(Collision other)
     {
         if (ballState != SuperBallState.LIVE && ballState != SuperBallState.FALLING)
@@ -181,9 +181,8 @@ public class SuperballBehavior : MonoBehaviour
         Vector3 origin = GameObject.Find("Sphere").transform.position;
         Ray ray = new Ray(lastCollisionLocation, this.GetComponent<Rigidbody>().velocity.normalized);
         RaycastHit hitInfo;
-        if (Physics.Raycast(ray, out hitInfo, 30f, 1 << 8)) //collisions is layer 8, so 1 << 8 is necessary
+        if (Physics.Raycast(ray, out hitInfo, 30f, collisionLayer)) //collisions is layer 8, so 1 << 8 is necessary
         {
-            nextCollisionLocation = hitInfo.point;
             nextCollisionObject = hitInfo.collider.gameObject;
         }
         else //Physics.Raycast returns "false"
