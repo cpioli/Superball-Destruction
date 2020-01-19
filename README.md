@@ -2,21 +2,25 @@
 
 <h1>The goal of this game</h1>
 
-This was an attempt to make a set of game mechanics that turned a rubber superball into an object players could throw in a room filled with objects. The game wasn't that fun, though, and I had to shelve it after several iterations.
+This was an attempt to make a game out of the scene in Men in Black where J touches a yellow orb, which immediately destroys everything inside MIB headquarters. The player aims a cannon and fires it at ceramic plates in a small room. If the ball hits a plate, the plate will "disappear" and its velocity will increase. If it hits anything else in the room - in this game, a wall or a shelf - the ball's velocity will decrease. Once the superball's velocity reaches a value less than 5mph, gravity will be reactivated, and the game ends when the y-component of the ball's velocity is <= 0.0f. Your score is the number of breakable objects you hit x 100.
 
-In this game, the player aims a cannon and fires it at ceramic plates in a small room. If the ball hits a breakable object its velocity will increase. If it hits an unbreakable object, its velocity decreases. Once the superball's velocity reaches a value less than 5mph, the ball's velocity becomes influenced by gravity. The game ends when the y-component of the ball's velocity is <= 0.0f. Your score is the number of breakable objects you hit x 100.
-
-The aesthetic is simple: breaking imaginary things is fun! (real things? Not so much)
+The aesthetic is simple: breaking imaginary things in a room is fun and hilarious (unlike real things, of which the player would be financially liable). Also,  the physics of a ball rebounding off a solid surface (or breaking a solid surface) lends itself to a system for the player to practice and create high scores. Furthermore, when the player's shot ends up doing some astronomically catastrophic damage - such as when the ball hits the chemistry set in MIB - the outcomes could be hilarious to the player.
 
 <h1>The Results</h1>
 
 <h2>Programming</h2>
 
-In terms of programming, it was a decent success. I created a shader and texture that displays the ball's trajectory when it's shot out of the cannon, I used Unity3D's physics system to rewrite the rules of physics for the superball, I learned how to use Unity's EventManagement system (which made scripting much easier), and I learned how to use Quaternions.
+I also wanted to make this game to improve my skills in Unity3D by focusing on systems I had not used before. I wrote a shader and combined it with a texture of repeating-arrows to create a material that displays the ball's trajectory when it's shot out of a cannon. Then I used Quaternions to calculate the ball's expected trajectory in this "Aiming state" to create another texture that pointed in the direction the ball would bounce when it collided with an object the cannon was aimed at, deriving a Vector and orientation to apply to the second texture.
+
+Next, I used Unity3D's physics system to rewrite the rules governing the ball's "bounciness": to determine if an object is Breakable, the GameObject the ball collides with is checked in Physics.OnCollisionEnter and OnCollisionExit, and I was also able to adjust the ball's velocity, creating its own rules of physics, which met the needs for my designs. I learned how to use Unity's EventManagement system (which made scripting much easier), and I learned how to use Quaternions.
+
+Lastly, I taught myself how to use Unity3D's Event Messaging System. The class was developed to resemble the Observer Design Pattern: the programmer creates Interfaces derived from IEventSystemHandler, and uses a static class EventSystems to send messages and lambda functions to any GameObject containing a script that implements your interfaces (derived from IEventSystemHandler).
+
+I discuss some additional features I developed in the following section on Design and Playability.
 
 <h2>Design and Playability</h2>
 
-I need to discuss the game's shortcomings. Simply put, it was not fun, and I decided to shelve it. Here I will present a list of its problems:
+I need to discuss the game's shortcomings. Simply put, it was not fun, and I decided to shelve it until new ideas present themselves. Here I will present a list of the problems, the fixes I attempted, and further explanations of why they didn't work.
 
 <h3>Problem 1</h3>
 
